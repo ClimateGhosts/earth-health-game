@@ -21,6 +21,27 @@ PROBLEM_DESC = """
 
 from libs.soluzion import Basic_Operator
 
+from dataclasses import dataclass
+
+@dataclass
+class Region:
+    """
+    Region of the Earth
+    """
+    x: int
+    y: int # Coordinates in the gridmap
+
+
+    name: str
+    population: int
+    temperature: float
+    precipitation: float
+    elevation: float
+    vegetation: float
+    water: float
+    pollution: float
+    health: float
+    disasters: float
 
 class Color:
     """
