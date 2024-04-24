@@ -1,6 +1,7 @@
+import math
 from copy import deepcopy
 
-from soluzion import Basic_Operator
+from soluzion import Basic_Operator, Basic_State
 
 # <METADATA>
 SOLUZION_VERSION = "4.0"
@@ -20,6 +21,77 @@ PROBLEM_DESC = """
 # </METADATA>
 
 # <COMMON_CODE>
+
+from dataclasses import dataclass
+from enum import Enum
+
+
+class DisasterType(Enum):
+    pass
+
+
+class RegionType(Enum):
+    OCEAN = 0
+    MOUNTAIN = 1
+    PLAINS = 2
+    WOODS = 3
+    MESA = 4
+
+
+# TODO data about interaction of disaster and region
+
+
+@dataclass
+class Region:
+    """
+    Region of the Earth
+    """
+
+    x: int
+    y: int  # Coordinates in the gridmap
+    biome: RegionType
+    health: int
+    player: int
+
+
+# name: str
+# population: int
+# temperature: float
+# precipitation: float
+# elevation: float
+# vegetation: float
+# water: float
+# pollution: float
+# health: float
+# disasters: float
+
+
+@dataclass
+class World:
+    # 2d array of regions
+    regions: list[list[Region]]
+    num_players: int
+
+    # global_pollution: float
+    # global_temperature: float
+    # global_sea_level: float
+    # global_health: float
+    # global_disasters: float
+
+
+class Color:
+    """
+    Console text color codes
+    """
+
+    RED = "\033[91m"
+    GREEN = "\033[92m"
+    YELLOW = "\033[93m"
+    BLUE = "\033[94m"
+    MAGENTA = "\033[95m"
+    CYAN = "\033[96m"
+    WHITE = "\033[97m"
+    RESET = "\033[0m"
 
 
 MAX_REGION_HEALTH = 5
