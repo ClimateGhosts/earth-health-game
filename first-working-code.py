@@ -1,4 +1,7 @@
+import math
 from copy import deepcopy
+
+from soluzion import Basic_Operator, Basic_State
 
 # <METADATA>
 SOLUZION_VERSION = "4.0"
@@ -19,8 +22,6 @@ PROBLEM_DESC = """
 
 # <COMMON_CODE>
 
-from libs.soluzion import Basic_Operator
-
 from dataclasses import dataclass
 from enum import Enum
 
@@ -36,18 +37,20 @@ class RegionType(Enum):
 
 # TODO data about interaction of disaster and region
 
+
 @dataclass
 class Region:
     """
     Region of the Earth
     """
+
     x: int
-    y: int # Coordinates in the gridmap
+    y: int  # Coordinates in the gridmap
     biome: RegionType
     health: int
     player: int
 
-    # name: str
+   # name: str
     # population: int
     # temperature: float
     # precipitation: float
@@ -63,12 +66,13 @@ class World:
     # 2d array of regions
     regions: list[list[Region]]
     num_players: int
-    
+
     # global_pollution: float
     # global_temperature: float
     # global_sea_level: float
     # global_health: float
     # global_disasters: float
+
 
 class Color:
     """
@@ -103,20 +107,23 @@ class RegionState:
         self.health = INITIAL_REGION_HEALTH
 
     def __str__(self):
-        return f"Region {self.name} has {self.health} health"
+        return f"Region {self.name} with {self.health} health"
 
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
 
 
 class PlayerState:
+    """
+    Class within state storing the data for a player
+    """
 
     def __init__(self, player_id=0):
         self.player_id = player_id
         self.money = STARTING_MONEY
 
     def __str__(self):
-        return f"Player {self.player_id} has {self.money} money"
+        return f"Player {self.player_id} with {self.money} money"
 
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
@@ -130,6 +137,7 @@ class State:
     def __init__(self):
         self.time = 0
         self.current_player = 0
+        self.global_badness = 0
         self.players = [PlayerState(player_id) for player_id in range(PLAYERS)]
         self.regions = {
             "Jamestown": RegionState("Jamestown", 0),
@@ -142,7 +150,18 @@ class State:
         return self.__dict__ == other.__dict__
 
     def __str__(self):
-        result = ""
+        result = "\n"
+
+        for player in self.players:
+            result += f"{player}\n"
+            for region in self.regions.values():
+                if region.current_player == player.player_id:
+                    result += f"  {region}\n"
+
+            result += "\n"
+
+        result += f"The time is {self.time} and the climate badness is {self.global_badness}\n"
+        result += f"It is Player {self.current_player}'s turn\n"
 
         return result
 
@@ -156,37 +175,66 @@ class State:
         return "TODO goal message"
 
 
-class UpOperator(Basic_Operator):
+class PlayerAction(Basic_Operator):
+    """
+    Base operator for a particular action that a player can take on their turn
+    """
+
+    def __init__(self, name):
+        super().__init__(name)
+
+    def is_applicable(self, state: State):
+        return True
+
+    def update_state(self, state: State):
+        pass
+
+    def apply(self, state: State):
+        new_state: State = state.clone()
+
+        self.update_state(new_state)
+
+        # Progress turns
+
+        new_state.current_player += 1
+        if new_state.current_player >= PLAYERS:
+            new_state.time += 1
+            new_state.current_player = 0
+
+        return new_state
+
+
+class UpOperator(PlayerAction):
     def __init__(self):
         super().__init__("Be selfish")
 
-    def is_applicable(self, state):
-        return True
+    def update_state(self, state: State):
+        state.global_badness += 1
 
-    def apply(self, state):
-        new_state: State = state.clone()
-
-        return new_state
+        state.players[state.current_player].money += 10
 
 
-class DownOperator(Basic_Operator):
+class DownOperator(PlayerAction):
     def __init__(self):
-        super().__init__("Don't be selfish")
+        super().__init__("Be not selfish")
 
-    def is_applicable(self, state):
-        return True
+    def update_state(self, state: State):
+        for region in state.regions.values():
+            if region.current_player == state.current_player:
+                region.health = min(region.health + 1, MAX_REGION_HEALTH)
 
-    def apply(self, state):
-        new_state: State = state.clone()
 
-        player = state.current_player
+class NoneOperator(PlayerAction):
+    def __init__(self):
+        super().__init__("Do nothing")
 
-        return new_state
+    def update_state(self, state: State):
+        pass
 
 
 # </COMMON_CODE>
 
 # <OPERATORS>
-OPERATORS = [UpOperator(), DownOperator()]
+OPERATORS = [UpOperator(), DownOperator(), NoneOperator()]
 
 # </OPERATORS>
