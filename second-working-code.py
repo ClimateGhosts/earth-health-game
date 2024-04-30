@@ -93,6 +93,8 @@ class RegionType(Enum):
 
 playable_regions = list(RegionType)[1:]
 
+# TODO data about disaster compounding, explotation potential (mesa gives more gold than plains), curves of damage and health.
+
 # Convention: the higher the number, the worse the disaster impact.
 disaster_matrix: dict[DisasterType, dict[RegionType, int]] = {
     DisasterType.EARTHQUAKE: {
