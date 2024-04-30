@@ -428,6 +428,7 @@ class DownOperator(PlayerAction):
         for region in state.regions.values():
             if region.current_player == state.current_player:
                 region.health = min(region.health + 1, MAX_REGION_HEALTH)
+                state.current_player.money -= 20 # TODO tune this to depend on health
 
 
 class NoneOperator(PlayerAction):
@@ -437,6 +438,16 @@ class NoneOperator(PlayerAction):
     def update_state(self, state: State):
         pass
 
+
+class SendForeignAidOperator(PlayerAction):
+    def __init__(self):
+        super().__init__("Send Foreign Aid")
+
+    def update_state(self, state: State):
+        for region in state.regions.values():
+            if region.current_player != state.current_player:
+                region.health = min(region.health + 1, MAX_REGION_HEALTH)
+                state.current_player.money -= 30 # Fixing the world is expensive, especially far away.
 
 OPERATORS = [UpOperator(), DownOperator(), NoneOperator()]
 
