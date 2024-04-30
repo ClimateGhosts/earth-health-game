@@ -247,7 +247,7 @@ class WorldState:
         # global_health: float
         # global_disasters: float
 
-    def assign_initial_governors(self, players:List[PlayerState]):
+    def reassign_governors(self, players:List[PlayerState]):
         """
         Assigns the first regions to the players.
         """
@@ -256,10 +256,14 @@ class WorldState:
                 # Randomly select a region from the world. If it is not ocean, assign it. Otherwise, try again.
                 while True:
                     region = random.choice(self.regions)
-                    if region.current_player == -1 and region.region_type != RegionType.OCEAN:
+                    if region.current_player == -1 and region.region_type != RegionType.OCEAN and region.health > 0:
                         region.current_player = p.player_id
                         break
                     # TODO ensure this will update by reference
+
+    def reset_ownership(self):
+        for region in self.regions:
+            region.current_player = -1
 
 class State:
     """
@@ -275,7 +279,7 @@ class State:
         self.players = [PlayerState(player_id) for player_id in range(PLAYERS)]
         
         # Initialize regions, assigning them to players round robin.
-        self.world.assign_initial_governors(self.players)
+        self.world.reassign_governors(self.players)
         
         
         # self.regions = {
@@ -341,7 +345,6 @@ class State:
             region.health -= damage
 
             if region.health <= 0:
-                # TODO eliminate a region
                 # Player loses 1 region counter, and this region cannot be transitioned to.
                 self.current_player.regions_owned -= 1
                 if self.current_player.regions_owned <= 0:
@@ -352,6 +355,16 @@ class State:
             self.current_disasters.append(Devastation(region_id, disaster, damage))
 
         self.stat_disasters.append(len(self.current_disasters))
+
+    def region_shuffle(self):
+        """
+        Randomly shuffle the regions owned by players to simulate the world changing.
+        Uninhabitable regions (health <= 0) are not shuffled to. Oceans are not shuffled to.
+        Future: have semirandom process here.
+        """   
+        self.world.reset_ownership()
+        self.world.reassign_governors(self.players)
+
 
     def transition_msg(self, s):
         """
