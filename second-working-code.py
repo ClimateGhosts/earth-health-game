@@ -1,6 +1,7 @@
 import math
 import random
 from copy import deepcopy
+from typing import List
 from soluzion import Basic_Operator, Basic_State
 
 # region METADATA
@@ -92,6 +93,7 @@ class RegionType(Enum):
 
 playable_regions = list(RegionType)[1:]
 
+# Convention: the higher the number, the worse the disaster impact.
 disaster_matrix: dict[DisasterType, dict[RegionType, int]] = {
     DisasterType.EARTHQUAKE: {
         RegionType.MESA: 2,
@@ -123,18 +125,28 @@ disaster_matrix: dict[DisasterType, dict[RegionType, int]] = {
     },
 }
 
+# TODO disaster compounding
 
-@dataclass
-class Region:
+@dataclass 
+class Devastation:
     """
-    Region of the Earth
+    Describe which region is hit by a disaster and for how much damage.
     """
+    region: str
+    disaster: DisasterType
+    damage: int
 
-    x: int
-    y: int  # Coordinates in the gridmap
-    biome: RegionType
-    health: int
-    player: int
+# @dataclass
+# class Region:
+#     """
+#     Region of the Earth
+#     """
+
+#     x: int
+#     y: int  # Coordinates in the gridmap
+#     biome: RegionType
+#     health: int
+#     player: int
 
 
 # name: str
@@ -148,28 +160,16 @@ class Region:
 # health: float
 # disasters: float
 
-
-@dataclass
-class World:
-    # 2d array of regions
-    regions: list[list[Region]]
-    num_players: int
-
-    # global_pollution: float
-    # global_temperature: float
-    # global_sea_level: float
-    # global_health: float
-    # global_disasters: float
-
-
 MAX_REGION_HEALTH = 10
 INITIAL_REGION_HEALTH = 5
 STARTING_MONEY = 100
 STARTING_BADNESS = 5
 PLAYERS = 4
+TOTAL_REGIONS = 20
+INITIAL_REGIONS_OWNED = TOTAL_REGIONS // PLAYERS
 SEED = None  # 1701
 MAX_DISASTERS_PER_ROUND = 5
-DISASTER_CHANCE_FACTOR = 0.95  # lower = more disasters
+DISASTER_CHANCE_FACTOR = 0.95  # Threshold for disasters to occur. lower = more disasters
 DEFAULT_DISASTER_DAMAGE = 4
 
 random.seed(SEED)
@@ -180,11 +180,13 @@ class RegionState:
     Class within state storing the data for one region
     """
 
-    def __init__(self, name: str, current_player: int, region_type: RegionType):
+    def __init__(self, name: str, current_player: int, region_type: RegionType, health: int, x: int, y: int):
         self.name = name
         self.current_player = current_player
-        self.health = INITIAL_REGION_HEALTH
+        self.health = health
         self.region_type = region_type
+        self.x = x
+        self.y = y
 
     def __str__(self):
         return f"Region {self.name} ({self.region_type}) with {self.health} health"
@@ -192,6 +194,8 @@ class RegionState:
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
 
+    def rename(self, new_name): # TODO allow vanity access
+        self.name = new_name
 
 class PlayerState:
     """
@@ -201,6 +205,7 @@ class PlayerState:
     def __init__(self, player_id=0):
         self.player_id = player_id
         self.money = STARTING_MONEY
+        self.regions_owned = INITIAL_REGIONS_OWNED
 
     def __str__(self):
         return f"Player {self.player_id} with {self.money} money"
@@ -208,6 +213,53 @@ class PlayerState:
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
 
+# TODO send help option
+
+class WorldState:
+    """
+    Class within state storing the relative positions of regions, accessing them.
+    """
+    def __init__(self, region_count=TOTAL_REGIONS) -> None: 
+        self.regions:List[RegionState] = [] # TODO refactor to be easier to locate adjacent regions if needed. Maybe regions: list[list[Region]].
+        self.region_count = region_count
+
+        width = int(region_count ** 0.5)
+        height = width
+        # This will generate as square of a grid as possible.
+        while width * height < region_count: # Increase width if necessary to reach the desired area
+            width += 1
+            height = region_count // width # Adjust height to maintain squareness
+
+        # Populate the (width, height) world with regions # TODO more clever world generation, continents, perlin noise, etc
+        for x in range(width):
+            for y in range(height):
+                region_type = random.choice(playable_regions)
+                self.regions.append(RegionState(name="", current_player=-1, region_type=region_type, health=INITIAL_REGION_HEALTH, x=x, y=y)) # -1 is the "unowned" player id. # TODO make this owned by the class, as a default, fewer mistakes.
+
+        self.width = width
+        self.height = height 
+            
+        # num_players: int
+
+        # global_pollution: float
+        # global_temperature: float
+        # global_sea_level: float
+        # global_health: float
+        # global_disasters: float
+
+    def assign_initial_governors(self, players:List[PlayerState]):
+        """
+        Assigns the first regions to the players.
+        """
+        for p in players:
+            for i in range(p.regions_owned): # This assumes there will always be enough regions. The last player has the "least" choice if we hardcode balancing.
+                # Randomly select a region from the world. If it is not ocean, assign it. Otherwise, try again.
+                while True:
+                    region = random.choice(self.regions)
+                    if region.current_player == -1 and region.region_type != RegionType.OCEAN:
+                        region.current_player = p.player_id
+                        break
+                    # TODO ensure this will update by reference
 
 class State:
     """
@@ -215,19 +267,26 @@ class State:
     """
 
     def __init__(self):
+        self.world = WorldState()
+        self.stat_disasters:List[int] = [] # Indexed by time step, summary statistics to plot. 
         self.time = 0
         self.current_player = 0
         self.global_badness = STARTING_BADNESS
         self.players = [PlayerState(player_id) for player_id in range(PLAYERS)]
-        self.regions = {
-            "Jamestown": RegionState("Jamestown", 0, random.choice(playable_regions)),
-            "Alicialand": RegionState("Alicialand", 1, random.choice(playable_regions)),
-            "Maxopolis": RegionState("Maxopolis", 2, random.choice(playable_regions)),
-            "Andreyville": RegionState(
-                "Andreyville", 3, random.choice(playable_regions)
-            ),
-        }
-        self.current_disasters: list[tuple[DisasterType, str, int]] = []
+        
+        # Initialize regions, assigning them to players round robin.
+        self.world.assign_initial_governors(self.players)
+        
+        
+        # self.regions = {
+        #     "Jamestown": RegionState("Jamestown", 0, random.choice(playable_regions)),
+        #     "Alicialand": RegionState("Alicialand", 1, random.choice(playable_regions)),
+        #     "Maxopolis": RegionState("Maxopolis", 2, random.choice(playable_regions)),
+        #     "Andreyville": RegionState(
+        #         "Andreyville", 3, random.choice(playable_regions)
+        #     ),
+        # }
+        self.current_disasters: list[Devastation] = [] # Disasters to be applied per turn
 
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
@@ -237,7 +296,8 @@ class State:
 
         for player in self.players:
             result += f"{player}\n"
-            for region in self.regions.values():
+            for region in self.world.regions:
+            # for region in self.regions.values():
                 if region.current_player == player.player_id:
                     result += f"  {region}\n"
 
@@ -266,14 +326,14 @@ class State:
         current_disaster_types = []
 
         for i in range(0, MAX_DISASTERS_PER_ROUND):
-            if random.random() > math.pow(DISASTER_CHANCE_FACTOR, self.global_badness):
+            if random.random() > math.pow(DISASTER_CHANCE_FACTOR, self.global_badness): # Uniform[0,1] > [0,1]^[5,inf) # Initially 0.95^5 = 0.77, 23% chance of disaster
                 disaster = random.choice(list(DisasterType))
                 current_disaster_types.append(disaster)
-
+    
         self.current_disasters.clear()
         for disaster in current_disaster_types:
-            region_id = random.choice(list(self.regions.keys()))
-            region = self.regions[region_id]
+            region_id = random.choice(list(self.world.regions))
+            region = self.world.regions[region_id]
             damage = (
                 DEFAULT_DISASTER_DAMAGE + disaster_matrix[disaster][region.region_type]
             )
@@ -282,9 +342,16 @@ class State:
 
             if region.health <= 0:
                 # TODO eliminate a region
-                pass
+                # Player loses 1 region counter, and this region cannot be transitioned to.
+                self.current_player.regions_owned -= 1
+                if self.current_player.regions_owned <= 0:
+                    # TODO player loses their grip on this mortal coil.
+                    pass
+                region.player = -1
+            
+            self.current_disasters.append(Devastation(region_id, disaster, damage))
 
-            self.current_disasters.append((disaster, region_id, damage))
+        self.stat_disasters.append(len(self.current_disasters))
 
     def transition_msg(self, s):
         """
@@ -298,12 +365,8 @@ class State:
         msg = f"Time has progressed from {old_state.time} to {self.time}.\n"
 
         if len(self.current_disasters) > 0:
-            for disaster_tuple in self.current_disasters:
-                disaster_type = disaster_tuple[0]
-                region = disaster_tuple[1]
-                damage = disaster_tuple[2]
-
-                msg += f"\nA {disaster_type} hit {region} for {damage} damage."
+            for devastation in self.current_disasters:
+                msg += f"\nA {devastation.disaster} hit {devastation.region} for {devastation.damage} damage."
 
         else:
             msg += "\nNo disasters occurred."
