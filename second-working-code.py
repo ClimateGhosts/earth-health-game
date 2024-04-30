@@ -1,9 +1,9 @@
 import math
+import random
 from copy import deepcopy
-
 from soluzion import Basic_Operator, Basic_State
 
-# <METADATA>
+# region METADATA
 SOLUZION_VERSION = "4.0"
 PROBLEM_NAME = "Earth Health"
 PROBLEM_VERSION = "1.0"
@@ -18,27 +18,110 @@ PROBLEM_DESC = """
     and therefore educators, charities, and organizations. 
     """
 
-# </METADATA>
+# endregion METADATA
 
-# <COMMON_CODE>
+# region COMMON_CODE
 
 from dataclasses import dataclass
 from enum import Enum
 
 
+class Color:
+    """
+    Console text color codes
+    """
+
+    RED = "\033[91m"
+    GREEN = "\033[92m"
+    YELLOW = "\033[93m"
+    BLUE = "\033[94m"
+    MAGENTA = "\033[95m"
+    CYAN = "\033[96m"
+    WHITE = "\033[97m"
+    RESET = "\033[0m"
+
+
 class DisasterType(Enum):
-    pass
+    EARTHQUAKE = "Earthquake"
+    FIRE = "Fire"
+    FLOOD = "Flood"
+    WINDSTORM = "Windstorm"
+
+    def __str__(self):
+        return f"{self.color()}{self.value}{Color.RESET}"
+
+    def color(self):
+        match self:
+            case self.EARTHQUAKE:
+                return Color.GREEN
+            case self.FIRE:
+                return Color.RED
+            case self.FLOOD:
+                return Color.BLUE
+            case self.WINDSTORM:
+                return Color.YELLOW
+            case _:
+                return Color.RESET
 
 
 class RegionType(Enum):
-    OCEAN = 0
-    MOUNTAIN = 1
-    PLAINS = 2
-    WOODS = 3
-    MESA = 4
+    OCEAN = "Ocean"
+    MOUNTAIN = "Mountain"
+    PLAINS = "Plains"
+    WOODS = "Woods"
+    MESA = "Mesa"
+
+    def __str__(self):
+        return f"{self.color()}{self.value}{Color.RESET}"
+
+    def color(self):
+        match self:
+            case self.OCEAN:
+                return Color.BLUE
+            case self.MOUNTAIN:
+                return Color.CYAN
+            case self.PLAINS:
+                return Color.YELLOW
+            case self.WOODS:
+                return Color.GREEN
+            case self.MESA:
+                return Color.RED
+            case _:
+                return Color.RESET
 
 
-# TODO data about interaction of disaster and region
+playable_regions = list(RegionType)[1:]
+
+disaster_matrix: dict[DisasterType, dict[RegionType, int]] = {
+    DisasterType.EARTHQUAKE: {
+        RegionType.MESA: 2,
+        RegionType.PLAINS: -2,
+        RegionType.WOODS: -1,
+        RegionType.MOUNTAIN: 1,
+        RegionType.OCEAN: 0,
+    },
+    DisasterType.FIRE: {
+        RegionType.MESA: -2,
+        RegionType.PLAINS: 1,
+        RegionType.WOODS: 2,
+        RegionType.MOUNTAIN: -1,
+        RegionType.OCEAN: 0,
+    },
+    DisasterType.FLOOD: {
+        RegionType.MESA: -1,
+        RegionType.PLAINS: 2,
+        RegionType.WOODS: 1,
+        RegionType.MOUNTAIN: -2,
+        RegionType.OCEAN: 0,
+    },
+    DisasterType.WINDSTORM: {
+        RegionType.MESA: 1,
+        RegionType.PLAINS: -1,
+        RegionType.WOODS: -2,
+        RegionType.MOUNTAIN: 2,
+        RegionType.OCEAN: 0,
+    },
+}
 
 
 @dataclass
@@ -79,26 +162,17 @@ class World:
     # global_disasters: float
 
 
-class Color:
-    """
-    Console text color codes
-    """
-
-    RED = "\033[91m"
-    GREEN = "\033[92m"
-    YELLOW = "\033[93m"
-    BLUE = "\033[94m"
-    MAGENTA = "\033[95m"
-    CYAN = "\033[96m"
-    WHITE = "\033[97m"
-    RESET = "\033[0m"
-
-
-MAX_REGION_HEALTH = 5
-INITIAL_REGION_HEALTH = 3
+MAX_REGION_HEALTH = 10
+INITIAL_REGION_HEALTH = 5
 STARTING_MONEY = 100
-
+STARTING_BADNESS = 5
 PLAYERS = 4
+SEED = None  # 1701
+MAX_DISASTERS_PER_ROUND = 5
+DISASTER_CHANCE_FACTOR = 0.95  # lower = more disasters
+DEFAULT_DISASTER_DAMAGE = 4
+
+random.seed(SEED)
 
 
 class RegionState:
@@ -106,13 +180,14 @@ class RegionState:
     Class within state storing the data for one region
     """
 
-    def __init__(self, name: str, current_player: int):
+    def __init__(self, name: str, current_player: int, region_type: RegionType):
         self.name = name
         self.current_player = current_player
         self.health = INITIAL_REGION_HEALTH
+        self.region_type = region_type
 
     def __str__(self):
-        return f"Region {self.name} with {self.health} health"
+        return f"Region {self.name} ({self.region_type}) with {self.health} health"
 
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
@@ -142,14 +217,17 @@ class State:
     def __init__(self):
         self.time = 0
         self.current_player = 0
-        self.global_badness = 0
+        self.global_badness = STARTING_BADNESS
         self.players = [PlayerState(player_id) for player_id in range(PLAYERS)]
         self.regions = {
-            "Jamestown": RegionState("Jamestown", 0),
-            "Alicialand": RegionState("Alicialand", 1),
-            "Maxopolis": RegionState("Maxopolis", 2),
-            "Andreyville": RegionState("Andreyville", 3),
+            "Jamestown": RegionState("Jamestown", 0, random.choice(playable_regions)),
+            "Alicialand": RegionState("Alicialand", 1, random.choice(playable_regions)),
+            "Maxopolis": RegionState("Maxopolis", 2, random.choice(playable_regions)),
+            "Andreyville": RegionState(
+                "Andreyville", 3, random.choice(playable_regions)
+            ),
         }
+        self.current_disasters: list[tuple[DisasterType, str, int]] = []
 
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
@@ -179,6 +257,64 @@ class State:
     def goal_message(self):
         return "TODO goal message"
 
+    def move_time_forward(self):
+        """
+        Primary function that processes the events of progressing time forward
+        """
+        self.time += 1
+
+        current_disaster_types = []
+
+        for i in range(0, MAX_DISASTERS_PER_ROUND):
+            if random.random() > math.pow(DISASTER_CHANCE_FACTOR, self.global_badness):
+                disaster = random.choice(list(DisasterType))
+                current_disaster_types.append(disaster)
+
+        self.current_disasters.clear()
+        for disaster in current_disaster_types:
+            region_id = random.choice(list(self.regions.keys()))
+            region = self.regions[region_id]
+            damage = (
+                DEFAULT_DISASTER_DAMAGE + disaster_matrix[disaster][region.region_type]
+            )
+
+            region.health -= damage
+
+            if region.health <= 0:
+                # TODO eliminate a region
+                pass
+
+            self.current_disasters.append((disaster, region_id, damage))
+
+    def transition_msg(self, s):
+        """
+        Transition message that happens after all players have made their decisions in a turn
+        :param s: the previous state
+        :return: The string to output
+        """
+
+        old_state: State = s
+
+        msg = f"Time has progressed from {old_state.time} to {self.time}.\n"
+
+        if len(self.current_disasters) > 0:
+            for disaster_tuple in self.current_disasters:
+                disaster_type = disaster_tuple[0]
+                region = disaster_tuple[1]
+                damage = disaster_tuple[2]
+
+                msg += f"\nA {disaster_type} hit {region} for {damage} damage."
+
+        else:
+            msg += "\nNo disasters occurred."
+
+        return msg
+
+
+# endregion COMMON_CODE
+
+# region OPERATORS
+
 
 class PlayerAction(Basic_Operator):
     """
@@ -192,9 +328,19 @@ class PlayerAction(Basic_Operator):
         return True
 
     def update_state(self, state: State):
+        """
+        Effects this operator has on the state
+        :param state:
+        :return:
+        """
         pass
 
     def apply(self, state: State):
+        """
+        Real operator apply function
+        :param state: current game state
+        :return: new game state
+        """
         new_state: State = state.clone()
 
         self.update_state(new_state)
@@ -203,7 +349,7 @@ class PlayerAction(Basic_Operator):
 
         new_state.current_player += 1
         if new_state.current_player >= PLAYERS:
-            new_state.time += 1
+            new_state.move_time_forward()
             new_state.current_player = 0
 
         return new_state
@@ -237,9 +383,15 @@ class NoneOperator(PlayerAction):
         pass
 
 
-# </COMMON_CODE>
-
-# <OPERATORS>
 OPERATORS = [UpOperator(), DownOperator(), NoneOperator()]
 
-# </OPERATORS>
+# endregion OPERATORS
+
+
+# region TRANSITIONS
+
+TRANSITIONS = [
+    (lambda s1, s2, op: s1.time != s2.time, lambda s1, s2, op: s2.transition_msg(s1))
+]
+
+# endregion TRANSITIONS

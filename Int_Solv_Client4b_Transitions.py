@@ -91,7 +91,7 @@ Do you wish to continue exploring?
       if applicability_vector[i]:
         print(str(i)+": "+OPERATORS[i].name)
     command = input("Enter command: 0, 1, 2, etc. for operator; B-back; H-help; Q-quit. >> ")
-    if command=="B" or command=="b": 
+    if command=="B" or command=="b":
       if len(STATE_STACK)>1:
         STATE_STACK.pop()
         DEPTH -= 1
@@ -130,7 +130,7 @@ Do you wish to continue exploring?
 
 def get_applicability_vector(s):
     #print("OPERATORS: "+str(OPERATORS))
-    return [op.is_applicable(s) for op in OPERATORS]  
+    return [op.is_applicable(s) for op in OPERATORS]
 
 def handle_poss_transition(s1, s2, op):
   try:
@@ -147,17 +147,22 @@ def handle_poss_transition(s1, s2, op):
       display_xition(text)
       break
 
-def display_xition(text):
-  frame_horiz = "+-"+len(text)*"-"+"-+"
+def display_xition(text: str):
+  lines = text.split("\n")
+
+  length = max(len(line) for line in lines)
+
+  frame_horiz = "+-"+length*"-"+"-+"
   print(frame_horiz)
-  print("| "+text+" |")
+  for line in lines:
+    print(line)
   print(frame_horiz)
 
 def exit_client():
   print("Terminating Text_SOLUZION_Client session.")
   log("Exiting")
   exit()
-  
+
 
 def show_instructions():
   print('''\nINSTRUCTIONS:\n
@@ -174,7 +179,7 @@ by typing 'B'.
 If you reach a goal state, you have solved the problem,
 and the computer will usually tell you that, but it depends
 on what kind of problem you are solving.''')
-      
+
 def apply_one_op():
     """Populate a popup menu with the names of currently applicable
        operators, and let the user choose which one to apply."""
@@ -200,7 +205,7 @@ if len(sys.argv)<2:
 ./Int_Solv_Client Missionaries
   ''')
   exit(1)
-  
+
 problem_name = sys.argv[1]
 print("Problem folder name is: "+problem_name)
 print("Problem file name is: "+problem_name+".py")
@@ -214,7 +219,7 @@ except Exception as e:
 
 OPERATORS=PROBLEM.OPERATORS
 STATE_STACK = []
-      
+
 # The following is only executed if this module is being run as the main
 # program, rather than imported from another one.
 if __name__ == '__main__':
