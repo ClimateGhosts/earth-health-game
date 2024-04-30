@@ -243,7 +243,7 @@ class WorldState:
         for h in range(self.height):
             for w in range(self.width):
                 region = self.regions[h * self.width + w]
-                result += f" {region.region_type.color()}{region.region_type}{region.current_player} " # {Color.RESET} # TODO add health
+                result += f" {region.region_type.color()}{str(region.region_type)} p{region.current_player}  " # {Color.RESET} # TODO add health
             result += "\n"
         
         
