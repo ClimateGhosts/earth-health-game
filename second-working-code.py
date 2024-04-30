@@ -136,44 +136,23 @@ class Devastation:
     disaster: DisasterType
     damage: int
 
-# @dataclass
-# class Region:
-#     """
-#     Region of the Earth
-#     """
-
-#     x: int
-#     y: int  # Coordinates in the gridmap
-#     biome: RegionType
-#     health: int
-#     player: int
-
-
-# name: str
-# population: int
-# temperature: float
-# precipitation: float
-# elevation: float
-# vegetation: float
-# water: float
-# pollution: float
-# health: float
-# disasters: float
-
-MAX_REGION_HEALTH = 10
-INITIAL_REGION_HEALTH = 5
-STARTING_MONEY = 100
-STARTING_BADNESS = 5
-PLAYERS = 4
-TOTAL_REGIONS = 20
-INITIAL_REGIONS_OWNED = TOTAL_REGIONS // PLAYERS
+'''World'''
 SEED = None  # 1701
+STARTING_BADNESS = 5
+'''Disasters'''
 MAX_DISASTERS_PER_ROUND = 5
 DISASTER_CHANCE_FACTOR = 0.95  # Threshold for disasters to occur. lower = more disasters
 DEFAULT_DISASTER_DAMAGE = 4
+'''Regions'''
+TOTAL_REGIONS = 20
+MAX_REGION_HEALTH = 10
+INITIAL_REGION_HEALTH = 5
+'''Players'''
+PLAYERS = 4
+STARTING_MONEY = 100
+INITIAL_REGIONS_OWNED = TOTAL_REGIONS // PLAYERS
 
 random.seed(SEED)
-
 
 class RegionState:
     """
@@ -196,6 +175,16 @@ class RegionState:
 
     def rename(self, new_name): # TODO allow vanity access
         self.name = new_name
+
+# population: int
+# temperature: float
+# precipitation: float
+# elevation: float
+# vegetation: float
+# water: float
+# pollution: float
+# disasters: float
+
 
 class PlayerState:
     """
@@ -269,7 +258,6 @@ class State:
     """
     State for our initial game
     """
-
     def __init__(self):
         self.world = WorldState()
         self.stat_disasters:List[int] = [] # Indexed by time step, summary statistics to plot. 
@@ -278,18 +266,9 @@ class State:
         self.global_badness = STARTING_BADNESS
         self.players = [PlayerState(player_id) for player_id in range(PLAYERS)]
         
-        # Initialize regions, assigning them to players round robin.
+        # Initialize regions, assigning them to players.
         self.world.reassign_governors(self.players)
         
-        
-        # self.regions = {
-        #     "Jamestown": RegionState("Jamestown", 0, random.choice(playable_regions)),
-        #     "Alicialand": RegionState("Alicialand", 1, random.choice(playable_regions)),
-        #     "Maxopolis": RegionState("Maxopolis", 2, random.choice(playable_regions)),
-        #     "Andreyville": RegionState(
-        #         "Andreyville", 3, random.choice(playable_regions)
-        #     ),
-        # }
         self.current_disasters: list[Devastation] = [] # Disasters to be applied per turn
 
     def __eq__(self, other):
