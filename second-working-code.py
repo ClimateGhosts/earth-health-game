@@ -238,6 +238,19 @@ class WorldState:
         # global_health: float
         # global_disasters: float
 
+    def __str__(self):
+        result = ""
+        for h in range(self.height):
+            for w in range(self.width):
+                region = self.regions[h * self.width + w]
+                result += f" {region.region_type.color()}{region.region_type}{region.current_player} " # {Color.RESET} # TODO add health
+            result += "\n"
+        
+        
+        # for region in self.regions:
+        #     result += f"{region}\n"
+        return result
+
     def reassign_governors(self, players:List[PlayerState]):
         """
         Assigns the first regions to the players.
@@ -272,12 +285,15 @@ class State:
         self.world.reassign_governors(self.players)
         
         self.current_disasters: list[Devastation] = [] # Disasters to be applied per turn
+        self.disaster_buffer: list[Devastation] = [] # Might be added to, by a Climate Ghost
 
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
 
     def __str__(self):
         result = "\n"
+
+        result += f"{self.world}"
 
         for player in self.players:
             result += f"{player}\n"
@@ -450,6 +466,30 @@ class SendForeignAidOperator(PlayerAction):
             if region.current_player != state.current_player:
                 region.health = min(region.health + 1, MAX_REGION_HEALTH)
                 state.current_player.money -= 30 # Fixing the world is expensive, especially far away.
+
+class ClimateGhostOperator(PlayerAction):
+    def __init__(self):
+        super().__init__("Climate Ghost")
+
+    def update_state(self, state: State):
+        # Select a region and apply a disaster to it.
+        for region in state.regions.values():
+            if region.health > 0:
+                disaster = random.choice(list(DisasterType))
+                damage = (
+                    DEFAULT_DISASTER_DAMAGE + disaster_matrix[disaster][region.region_type]
+                )
+                region.health -= damage
+
+                if region.health <= 0:
+                    # Player loses 1 region counter, and this region cannot be transitioned to.
+                    state.current_player.regions_owned -= 1
+                    if state.current_player.regions_owned <= 0:
+                        # TODO player loses their grip on this mortal coil.
+                        pass
+                    region.player = -1
+
+                state.disaster_buffer.append(Devastation(region.name, disaster, damage))
 
 OPERATORS = [UpOperator(), DownOperator(), NoneOperator()]
 
