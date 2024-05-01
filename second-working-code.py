@@ -594,7 +594,7 @@ class SendForeignAidOperator(PlayerAction):
 
 class ClimateGhostOperator(PlayerAction):
     def __init__(self):
-        super().__init__("Regenerate the upcoming disasters")
+        super().__init__("Reshuffle the upcoming kerfuffle")
 
     def is_applicable(self, state: State):
         return state.players[state.current_player].regions_owned == 0
