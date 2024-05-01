@@ -163,36 +163,31 @@ PLAYERS = 4
 STARTING_MONEY = 100
 INITIAL_REGIONS_OWNED = TOTAL_REGIONS // PLAYERS
 
-END_TIME = 10
+
+START_OF_UNIVERSE = -1
+END_OF_UNIVERSE = 5
 
 random.seed(SEED)
 
 region_names: list[str] = json.load(open("names.json"))
 
 
+@dataclass
 class RegionState:
     """
     Class within state storing the data for one region
     """
 
-    def __init__(
-        self,
-        name: str,
-        current_player: int,
-        region_type: RegionType,
-        health: int,
-        x: int,
-        y: int,
-    ):
-        self.name = name
-        self.current_player = current_player
-        self.health = health
-        self.region_type = region_type
-        self.x = x
-        self.y = y
+    name: str
+    current_player: int
+    region_type: RegionType
+    health: int
+    x: int
+    y: int
+    last_modified: int = START_OF_UNIVERSE
 
     def __str__(self):
-        return f"{self.name} ({self.region_type}, {self.health}/{MAX_REGION_HEALTH})"
+        return f"{self.name} ({self.region_type}, {self.health}❤️)"
 
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
@@ -222,7 +217,7 @@ class PlayerState:
         self.regions_owned = INITIAL_REGIONS_OWNED
 
     def __str__(self):
-        return f"Player {self.player_id} with {self.money} money"
+        return f"Player {self.player_id} with ${self.money}M"
 
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
@@ -311,7 +306,7 @@ class WorldState:
                     # TODO ensure this will update by reference
 
     def reset_ownership(self):
-        for region in self.regions:
+        for region in self.regions.values():
             region.current_player = -1
 
 
@@ -341,6 +336,7 @@ class State:
         )  # Might be added to, by a Climate Ghost
 
         self.generate_disaster_buffer()
+        self.current_region = self.next_region()
 
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
@@ -360,6 +356,7 @@ class State:
 
         result += f"The time is {self.time} and the climate badness is {self.global_badness}\n"
         result += f"It is Player {self.current_player}'s turn\n"
+        result += f"You are deciding for {self.world.regions[self.current_region]}\n"
 
         player = self.players[self.current_player]
 
@@ -376,9 +373,19 @@ class State:
         return deepcopy(self)
 
     def is_goal(self):
-        return self.time >= END_TIME or all(
+        return self.time >= END_OF_UNIVERSE or all(
             player.regions_owned == 0 for player in self.players
         )
+
+    def next_region(self):
+        current_regions = [
+            region
+            for region in self.world.regions.values()
+            if region.last_modified < self.time
+            and region.current_player == self.current_player
+        ]
+
+        return current_regions[0].name if len(current_regions) > 0 else ""
 
     def goal_message(self):
         alive_players = [player.regions_owned > 0 for player in self.players]
@@ -441,6 +448,11 @@ class State:
 
         self.stat_disasters.append(len(self.current_disasters))
 
+        self.generate_disaster_buffer()
+
+        if self.time % 2 == 0:
+            self.region_shuffle()
+
     def region_shuffle(self):
         """
         Randomly shuffle the regions owned by players to simulate the world changing.
@@ -499,57 +511,65 @@ class PlayerAction(Basic_Operator):
         """
         pass
 
-    def apply(self, state: State):
+    def apply(self, old_state: State):
         """
         Real operator apply function
-        :param state: current game state
+        :param old_state: current game state
         :return: new game state
         """
-        new_state: State = state.clone()
+        state: State = old_state.clone()
 
-        self.update_state(new_state)
+        self.update_state(state)
+
+        state.world.regions[state.current_region].last_modified = state.time
 
         # Progress turns
 
-        new_state.current_player += 1
-        if new_state.current_player >= PLAYERS:
-            new_state.move_time_forward()
-            new_state.current_player = 0
+        if state.next_region() == "":
+            state.current_player += 1
+            if state.current_player >= PLAYERS:
+                state.move_time_forward()
+                state.current_player = 0
 
-        return new_state
+        state.current_region = state.next_region()
+
+        return state
 
 
 class UpOperator(PlayerAction):
     def __init__(self):
-        super().__init__("Be selfish")
+        super().__init__("Exploit for wealth at the cost of health")
 
     def is_applicable(self, state: State):
         return state.players[state.current_player].regions_owned > 0
 
     def update_state(self, state: State):
-        state.global_badness += 1
+        region = state.world.regions[state.current_region]
 
+        region.health -= 1
+        # TODO may need a death handler here
+
+        state.global_badness += 1
         state.players[state.current_player].money += 10
 
 
 class DownOperator(PlayerAction):
     def __init__(self):
-        super().__init__("Be not selfish")
+        super().__init__("Heal and don't steal")
 
     def is_applicable(self, state: State):
         return state.players[state.current_player].regions_owned > 0
 
     def update_state(self, state: State):
-        for region in state.world.regions.values():
-            if region.current_player == state.current_player:
-                region.health = min(region.health + 1, MAX_REGION_HEALTH)
-                player = state.players[region.current_player]
-                player.money -= 20  # TODO tune this to depend on health
+        region = state.world.regions[state.current_region]
+        region.health = min(region.health + 1, MAX_REGION_HEALTH)
+        player = state.players[region.current_player]
+        player.money -= 20  # TODO tune this to depend on health
 
 
 class NoneOperator(PlayerAction):
     def __init__(self):
-        super().__init__("Do nothing")
+        super().__init__("Take no action for your faction")
 
     def update_state(self, state: State):
         pass
