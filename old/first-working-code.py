@@ -1,6 +1,6 @@
 from copy import deepcopy
 
-from soluzion import Basic_Operator
+from soluzion.soluzion import Basic_Operator
 
 # <METADATA>
 SOLUZION_VERSION = "4.0"

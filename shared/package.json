@@ -1,0 +1,16 @@
+{
+  "name": "shared",
+  "description": "Common type generation for our soluzion problem and client",
+  "dependencies": {
+    "quicktype": "^23.0.158",
+    "typescript": "^5.4.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0",
+    "prettier": "^3.2.5"
+  },
+  "scripts": {
+    "dev": "nodemon",
+    "generate": "quicktype types.ts -o ../soluzion/types.py"
+  }
+}

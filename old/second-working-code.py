@@ -3,7 +3,7 @@ import math
 import random
 from copy import deepcopy
 from typing import List
-from soluzion import Basic_Operator, Basic_State
+from soluzion.soluzion import Basic_Operator
 
 # region METADATA
 SOLUZION_VERSION = "4.0"
@@ -169,7 +169,7 @@ END_OF_UNIVERSE = 5
 
 random.seed(SEED)
 
-region_names: list[str] = json.load(open("names.json"))
+region_names: list[str] = json.load(open("../soluzion/names.json"))
 
 
 @dataclass
