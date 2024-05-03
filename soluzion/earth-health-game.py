@@ -127,6 +127,7 @@ disaster_matrix: dict[DisasterType, dict[RegionType, int]] = {
     },
 }
 
+
 # TODO disaster compounding
 
 
@@ -161,7 +162,6 @@ INITIAL_REGION_HEALTH = 5
 PLAYERS = 4
 STARTING_MONEY = 100
 INITIAL_REGIONS_OWNED = TOTAL_REGIONS // PLAYERS
-
 
 START_OF_UNIVERSE = -1
 END_OF_UNIVERSE = 5
@@ -235,11 +235,11 @@ class WorldState:
         self.map: list[str] = []
         self.region_count = region_count
 
-        width = int(region_count**0.5)
+        width = int(region_count ** 0.5)
         height = width
         # This will generate as square of a grid as possible.
         while (
-            width * height < region_count
+                width * height < region_count
         ):  # Increase width if necessary to reach the desired area
             width += 1
             height = region_count // width  # Adjust height to maintain squareness
@@ -290,15 +290,15 @@ class WorldState:
         """
         for p in players:
             for i in range(
-                p.regions_owned
+                    p.regions_owned
             ):  # This assumes there will always be enough regions. The last player has the "least" choice if we hardcode balancing.
                 # Randomly select a region from the world. If it is not ocean, assign it. Otherwise, try again.
                 while True:
                     region = random.choice(list(self.regions.values()))
                     if (
-                        region.current_player == -1
-                        and region.region_type != RegionType.OCEAN
-                        and region.health > 0
+                            region.current_player == -1
+                            and region.region_type != RegionType.OCEAN
+                            and region.health > 0
                     ):
                         region.current_player = p.player_id
                         break
@@ -363,8 +363,8 @@ class State:
             result += (
                 "You are a climate ghost! The disasters that could next happen are:"
             )
-            for devestation in self.disaster_buffer:
-                result += f"\n {devestation}"
+            for devastation in self.disaster_buffer:
+                result += f"\n {devastation}"
 
         return result
 
@@ -381,13 +381,15 @@ class State:
             region
             for region in self.world.regions.values()
             if region.last_modified < self.time
-            and region.current_player == self.current_player
+               and region.current_player == self.current_player
         ]
 
         return current_regions[0].name if len(current_regions) > 0 else ""
 
     def goal_message(self):
-        alive_players = [player.regions_owned > 0 for player in self.players]
+        alive_players = [player for player in self.players if player.regions_owned > 0]
+        print("these are alive_players: ", alive_players)
+        print("these are all players: ", self.players)
         msg = "The Game Has Concluded!\n"
 
         if len(alive_players) == 0:
@@ -417,7 +419,7 @@ class State:
             )
             region = self.world.regions[region_id]
             damage = (
-                DEFAULT_DISASTER_DAMAGE + disaster_matrix[disaster][region.region_type]
+                    DEFAULT_DISASTER_DAMAGE + disaster_matrix[disaster][region.region_type]
             )
 
             self.disaster_buffer.append(Devastation(region_id, disaster, damage))
@@ -432,7 +434,7 @@ class State:
 
         for devestation in self.disaster_buffer:
             if random.random() > math.pow(
-                DISASTER_CHANCE_FACTOR, self.global_badness
+                    DISASTER_CHANCE_FACTOR, self.global_badness
             ):  # Uniform[0,1] > [0,1]^[5,inf) # Initially 0.95^5 = 0.77, 23% chance of disaster
                 self.current_disasters.append(devestation)
                 region = self.world.regions[devestation.region]
@@ -541,8 +543,8 @@ class UpOperator(PlayerAction):
 
     def is_applicable(self, state: State, role=None):
         return (
-            super().is_applicable(state, role)
-            and state.players[state.current_player].regions_owned > 0
+                super().is_applicable(state, role)
+                and state.players[state.current_player].regions_owned > 0
         )
 
     def update_state(self, state: State):
@@ -561,8 +563,9 @@ class DownOperator(PlayerAction):
 
     def is_applicable(self, state: State, role=None):
         return (
-            super().is_applicable(state, role)
-            and state.players[state.current_player].regions_owned > 0
+                super().is_applicable(state, role)
+                and state.players[state.current_player].regions_owned > 0
+                and state.players[state.current_player].money > 0
         )
 
     def update_state(self, state: State):
@@ -586,8 +589,8 @@ class SendForeignAidOperator(PlayerAction):
 
     def is_applicable(self, state: State, role=None):
         return (
-            super().is_applicable(state, role)
-            and state.players[state.current_player].regions_owned > 0
+                super().is_applicable(state, role)
+                and state.players[state.current_player].regions_owned > 0
         )
 
     def update_state(self, state: State):
@@ -606,8 +609,8 @@ class ClimateGhostOperator(PlayerAction):
 
     def is_applicable(self, state: State, role=None):
         return (
-            super().is_applicable(state, role)
-            and state.players[state.current_player].regions_owned == 0
+                super().is_applicable(state, role)
+                and state.players[state.current_player].regions_owned == 0
         )
 
     def update_state(self, state: State):
