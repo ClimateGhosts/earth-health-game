@@ -33,7 +33,6 @@ class Color:
     """
     Console text color codes
     """
-
     RED = "\033[91m"
     GREEN = "\033[92m"
     YELLOW = "\033[93m"
@@ -88,7 +87,7 @@ class RegionType(Enum):
         elif self == self.MESA:
             return Color.RED
         else:
-            return Color.RES
+            return Color.RESET
 
 
 playable_regions = list(RegionType)[1:]
