@@ -312,6 +312,33 @@ class WorldState:
         for region in self.regions.values():
             region.current_player = -1
 
+    def get_adjacent_regions(self, region: RegionState):
+        """
+        Get the regions adjacent to the given region in a 9x9 grid.
+
+        ACTUALLY. I prefer applying a mask of weights to the world, multiplied by disaster damage.
+        """
+        adjacent_regions = []
+        for other_region in self.regions.values():
+            if (
+                    abs(region.x - other_region.x) <= 1
+                    and abs(region.y - other_region.y) <= 1
+                    and region != other_region
+            ):
+                adjacent_regions.append(other_region)
+        return adjacent_regions
+    
+    def apply_damage(self, devastation:Devastation):
+        """
+        Apply damage to a region and its neighbors.
+        """
+        region = devastation.region
+        damage = devastation.damage
+        region.health -= damage
+        for neighbor in self.get_adjacent_regions(region):
+            neighbor.health -= damage // 2
+
+
 
 class State:
     """
