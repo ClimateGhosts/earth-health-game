@@ -462,7 +462,7 @@ class State:
                         # Player loses 1 region counter, and this region cannot be transitioned to.
                         if region_owner.regions_owned != 0:
                             region_owner.regions_owned -= 1
-                        region.player = -1
+                        region.current_player = -1
 
         self.stat_disasters.append(len(self.current_disasters))
 
