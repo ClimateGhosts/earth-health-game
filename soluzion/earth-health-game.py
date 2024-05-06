@@ -176,7 +176,7 @@ class RegionState:
     Class within state storing the data for one region
     """
 
-    name: str
+    name: str 
     current_player: int
     region_type: RegionType
     health: int
@@ -328,12 +328,15 @@ class State:
 
         self.current_disasters: list[Devastation] = (
             []
-        )  # Disasters to be applied per turn
+        )  # Disasters to be applied per turn. Cleared at end of turn.
+
+        self.cataclysm_history: list[list[Devastation]] = [[]] # Stores all disasters each time step. Created to allow compounding.
+
         self.disaster_buffer: list[Devastation] = (
             []
         )  # Might be added to, by a Climate Ghost
 
-        self.generate_disaster_buffer()
+        self.disaster_buffer = self.generate_disaster_buffer()
         self.current_region = self.next_region()
 
     def __eq__(self, other):
@@ -400,13 +403,15 @@ class State:
 
         return msg
 
-    def generate_disaster_buffer(self):
+    def generate_disaster_buffer(self) -> list[Devastation]:
 
         current_disaster_types = [
             random.choice(list(DisasterType)) for _ in range(0, MAX_DISASTERS_PER_ROUND)
         ]
 
-        self.disaster_buffer.clear()
+        # self.disaster_buffer.clear()
+
+        new_disaster_buffer = []
 
         for disaster in current_disaster_types:
             region_id = random.choice(
@@ -419,9 +424,11 @@ class State:
             region = self.world.regions[region_id]
             damage = (
                     DEFAULT_DISASTER_DAMAGE + disaster_matrix[disaster][region.region_type]
+                    # TODO add compounding
             )
 
-            self.disaster_buffer.append(Devastation(region_id, disaster, damage))
+            new_disaster_buffer.append(Devastation(region_id, disaster, damage))
+        return new_disaster_buffer
 
     def move_time_forward(self):
         """
@@ -448,7 +455,7 @@ class State:
 
         self.stat_disasters.append(len(self.current_disasters))
 
-        self.generate_disaster_buffer()
+        self.disaster_buffer = self.generate_disaster_buffer()
 
         if self.time % 2 == 0:
             self.region_shuffle()
@@ -613,7 +620,7 @@ class ClimateGhostOperator(PlayerAction):
         )
 
     def update_state(self, state: State):
-        state.generate_disaster_buffer()
+        state.disaster_buffer = state.generate_disaster_buffer()
 
         # TODO this should be a transition, but could overlap with turn end
 
