@@ -33,6 +33,7 @@ class Color:
     """
     Console text color codes
     """
+
     RED = "\033[91m"
     GREEN = "\033[92m"
     YELLOW = "\033[93m"
@@ -215,7 +216,7 @@ class PlayerState:
         self.regions_owned = INITIAL_REGIONS_OWNED
 
     def __str__(self):
-        return f"Player {self.player_id} with ${self.money}M"
+        return f"Player {self.player_id} with ${self.money}M and {self.regions_owned} region(s)"
 
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
@@ -276,7 +277,10 @@ class WorldState:
             for w in range(self.width):
                 region_id = self.map[h * self.width + w]
                 region = self.regions[region_id]
-                result += f" {region.region_type.color()}{str(region.region_type)} p{region.current_player}  "  # {Color.RESET} # TODO add health
+                player_index = "p" + str(region.current_player)
+                if region.current_player == -1:
+                    player_index = "X"
+                result += f" {region.region_type.color()}{str(region.region_type)} ({player_index}, {region.health}❤️) "  # {Color.RESET} # TODO add health
             result += "\n"
 
         # for region in self.regions:
@@ -292,16 +296,17 @@ class WorldState:
                     p.regions_owned
             ):  # This assumes there will always be enough regions. The last player has the "least" choice if we hardcode balancing.
                 # Randomly select a region from the world. If it is not ocean, assign it. Otherwise, try again.
-                while True:
-                    region = random.choice(list(self.regions.values()))
-                    if (
-                            region.current_player == -1
-                            and region.region_type != RegionType.OCEAN
-                            and region.health > 0
-                    ):
-                        region.current_player = p.player_id
-                        break
-                    # TODO ensure this will update by reference
+                if not all(player.regions_owned <= 0 for player in players):
+                    while True:
+                        region = random.choice(list(self.regions.values()))
+                        if (
+                                region.current_player == -1
+                                and region.region_type != RegionType.OCEAN
+                                and region.health > 0
+                        ):
+                            region.current_player = p.player_id
+                            break
+                        # TODO ensure this will update by reference
 
     def reset_ownership(self):
         for region in self.regions.values():
@@ -340,7 +345,9 @@ class State:
         return self.__dict__ == other.__dict__
 
     def __str__(self):
-        result = "\n"
+        result = "\n\n"
+
+        result += f"The year is {2048 + self.time}, and the climate badness is {self.global_badness}.\n\n"
 
         result += f"World Map:\n{self.world}\n"
 
@@ -352,18 +359,19 @@ class State:
 
             result += "\n"
 
-        result += f"The time is {self.time} and the climate badness is {self.global_badness}\n"
-        result += f"It is Player {self.current_player}'s turn\n"
-        result += f"You are deciding for {self.world.regions[self.current_region]}\n"
+        if self.time < END_OF_UNIVERSE and not all(p.regions_owned <= 0 for p in self.players):
 
-        player = self.players[self.current_player]
+            result += f"\nIt is Player {self.current_player}'s turn.\n"
+            player = self.players[self.current_player]
 
-        if player.regions_owned <= 0:
-            result += (
-                "You are a climate ghost! The disasters that could next happen are:"
-            )
-            for devastation in self.disaster_buffer:
-                result += f"\n {devastation}"
+            if player.regions_owned <= 0:
+                result += (
+                    "You are a climate ghost! The disasters that could happen next are:"
+                )
+                for devastation in self.disaster_buffer:
+                    result += f"\n {devastation}"
+            else:
+                result += f"You are deciding for {self.world.regions[self.current_region]}.\n"
 
         return result
 
@@ -372,7 +380,7 @@ class State:
 
     def is_goal(self):
         return self.time >= END_OF_UNIVERSE or all(
-            player.regions_owned == 0 for player in self.players
+            player.regions_owned <= 0 for player in self.players
         )
 
     def next_region(self):
@@ -381,15 +389,16 @@ class State:
             for region in self.world.regions.values()
             if region.last_modified < self.time
                and region.current_player == self.current_player
+               and region.health > 0
         ]
 
         return current_regions[0].name if len(current_regions) > 0 else ""
 
     def goal_message(self):
         alive_players = [player for player in self.players if player.regions_owned > 0]
-        print("these are alive_players: ", alive_players)
-        print("these are all players: ", self.players)
-        msg = "The Game Has Concluded!\n"
+        # print("these are alive_players: ", alive_players)
+        # print("these are all players: ", self.players)
+        msg = "The Game Has Ended!\n"
 
         if len(alive_players) == 0:
             msg += "Everybody died :("
@@ -439,12 +448,14 @@ class State:
                 region = self.world.regions[devestation.region]
                 region_owner = self.players[region.current_player]
 
-                region.health -= devestation.damage
+                if region.health > 0:
+                    region.health -= devestation.damage
 
-                if region.health <= 0:
-                    # Player loses 1 region counter, and this region cannot be transitioned to.
-                    region_owner.regions_owned -= 1
-                    region.player = -1
+                    if region.health <= 0:
+                        # Player loses 1 region counter, and this region cannot be transitioned to.
+                        if region_owner.regions_owned != 0:
+                            region_owner.regions_owned -= 1
+                        region.player = -1
 
         self.stat_disasters.append(len(self.current_disasters))
 
@@ -457,7 +468,7 @@ class State:
         """
         Randomly shuffle the regions owned by players to simulate the world changing.
         Uninhabitable regions (health <= 0) are not shuffled to. Oceans are not shuffled to.
-        Future: have semirandom process here.
+        Future: have semi-random process here.
         """
         self.world.reset_ownership()
         self.world.reassign_governors(self.players)
@@ -521,7 +532,8 @@ class PlayerAction(Basic_Operator):
 
         self.update_state(state)
 
-        state.world.regions[state.current_region].last_modified = state.time
+        if state.current_region != "":
+            state.world.regions[state.current_region].last_modified = state.time
 
         # Progress turns
 
@@ -537,6 +549,9 @@ class PlayerAction(Basic_Operator):
 
 
 class UpOperator(PlayerAction):
+
+    MONEY_GAINED = 10  # TODO tune this (ex: less health = less money)
+
     def __init__(self):
         super().__init__("Exploit for wealth at the cost of health")
 
@@ -550,13 +565,20 @@ class UpOperator(PlayerAction):
         region = state.world.regions[state.current_region]
 
         region.health -= 1
-        # TODO may need a death handler here
+        # TODO may need a death handler here - DONE
+        if region.health <= 0:
+            region_owner = state.players[region.current_player]
+            if region_owner.regions_owned != 0:
+                region_owner.regions_owned -= 1
 
         state.global_badness += 1
-        state.players[state.current_player].money += 10
+        state.players[state.current_player].money += self.MONEY_GAINED
 
 
 class DownOperator(PlayerAction):
+
+    MONEY_REQUIRED = 20  # TODO tune this to depend on health
+
     def __init__(self):
         super().__init__("Heal and don't steal")
 
@@ -564,14 +586,14 @@ class DownOperator(PlayerAction):
         return (
                 super().is_applicable(state, role)
                 and state.players[state.current_player].regions_owned > 0
-                and state.players[state.current_player].money > 0
+                and state.players[state.current_player].money >= self.MONEY_REQUIRED
         )
 
     def update_state(self, state: State):
         region = state.world.regions[state.current_region]
         region.health = min(region.health + 1, MAX_REGION_HEALTH)
         player = state.players[region.current_player]
-        player.money -= 20  # TODO tune this to depend on health
+        player.money -= self.MONEY_REQUIRED
 
 
 class NoneOperator(PlayerAction):
@@ -580,9 +602,14 @@ class NoneOperator(PlayerAction):
 
     def update_state(self, state: State):
         pass
+        # region = state.world.regions[state.current_region]
+        # player = state.players[region.current_player]
 
 
 class SendForeignAidOperator(PlayerAction):
+
+    MONEY_REQUIRED = 30  # Fixing the world is expensive, especially far away.
+
     def __init__(self):
         super().__init__("Send Foreign Aid")
 
@@ -590,16 +617,17 @@ class SendForeignAidOperator(PlayerAction):
         return (
                 super().is_applicable(state, role)
                 and state.players[state.current_player].regions_owned > 0
+                and state.players[state.current_player].money >= self.MONEY_REQUIRED
         )
 
     def update_state(self, state: State):
+        region = state.world.regions[state.current_region]
+        player = state.players[region.current_player]
         for region in state.world.regions.values():
             if region.current_player != state.current_player:
                 region.health = min(region.health + 1, MAX_REGION_HEALTH)
-                player = state.players[region.current_player]
-                player.money -= (
-                    30  # Fixing the world is expensive, especially far away.
-                )
+                # player = state.players[region.current_player]
+        player.money -= self.MONEY_REQUIRED
 
 
 class ClimateGhostOperator(PlayerAction):
@@ -609,7 +637,7 @@ class ClimateGhostOperator(PlayerAction):
     def is_applicable(self, state: State, role=None):
         return (
                 super().is_applicable(state, role)
-                and state.players[state.current_player].regions_owned == 0
+                and state.players[state.current_player].regions_owned <= 0
         )
 
     def update_state(self, state: State):
@@ -622,7 +650,7 @@ class ClimateGhostOperator(PlayerAction):
             print(f" {devestation}")
 
 
-OPERATORS = [UpOperator(), DownOperator(), NoneOperator(), ClimateGhostOperator()]
+OPERATORS = [UpOperator(), DownOperator(), NoneOperator(), SendForeignAidOperator(), ClimateGhostOperator()]
 
 # endregion OPERATORS
 
