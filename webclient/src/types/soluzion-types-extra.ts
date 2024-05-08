@@ -1,1 +1,2 @@
-export type Operator = ClientEvents["operators_available"]["operators"][number];
+export type Operator =
+  ServerToClientEvents["operators_available"]["operators"][number];

@@ -1,7 +1,6 @@
 {
   "name": "webclient",
   "description": "Web based client for the earth health game soluzion server",
-  "packageManager": "yarn@1.22.18",
   "dependencies": {
     "bootstrap": "^5.1.3",
     "classnames": "^2.3.1",
@@ -41,6 +40,6 @@
     "start": "npx serve@latest out",
     "generateState": "quicktype src/types/state.json -o src/types/state.ts",
     "pages": "gh-pages -t -d out",
-    "deploy": "cross-env CI=true yarn build && yarn pages"
+    "deploy": "cross-env CI=true npm run build && npm run pages"
   }
 }

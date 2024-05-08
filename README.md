@@ -36,20 +36,14 @@ Make edits to `soluzion/earth-health-game.py`
 
 Install [node package manager (npm)](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
 
-Use yarn package manager
-
-```shell
-npm install -g yarn
-```
-
 Install dependencies
 
 ```shell
-yarn install
+npm install
 ```
 
 Run the client locally
 
 ```shell
-yarn dev
+npm run dev
 ```

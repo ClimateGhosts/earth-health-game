@@ -20,20 +20,16 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: "lts/*"
-          cache: "yarn"
-          cache-dependency-path: 'webclient/yarn.lock'
+          cache: "npm"
+          cache-dependency-path: 'webclient/package-lock.json'
 
       - name: Install
-        uses: borales/actions-yarn@v4.2.0
-        with:
-          dir: webclient
-          cmd: install --frozen-lockfile
+        run: npm ci
+        working-directory: webclient
 
       - name: Build
-        uses: borales/actions-yarn@v4.2.0
-        with:
-          dir: webclient
-          cmd: build
+        run: npm run build
+        working-directory: webclient
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3

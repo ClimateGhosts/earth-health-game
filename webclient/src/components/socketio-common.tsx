@@ -6,6 +6,7 @@ import React, {
 } from "react";
 import {
   Button,
+  Card,
   Col,
   Container,
   Dropdown,
@@ -13,27 +14,37 @@ import {
   DropdownMenu,
   DropdownToggle,
   Form,
+  Modal,
   Row,
 } from "react-bootstrap";
 import { io } from "socket.io-client";
 import { SoluzionSocket } from "../types/socketio";
-import { useLocalStorage, useSet } from "react-use";
-import { orderBy } from "lodash";
+import { useDebounce, useList, useSessionStorage, useSet } from "react-use";
+import Indicator from "./indicator";
 
 type SocketContext = {
   socket?: SoluzionSocket;
-  url: string;
-  isConnected: boolean;
+  serverUrl: string;
+  isConnected: boolean | null;
+  currentRoom?: Room;
+  roleInfo?: Role[];
 };
 
 export const SocketContext = createContext<SocketContext>({
-  url: process.env.NEXT_PUBLIC_DEFAULT_SERVER_URL as string,
+  serverUrl: process.env.NEXT_PUBLIC_DEFAULT_SERVER_URL as string,
   isConnected: false,
 });
 
-const createSocket = (url: string) => io(url) as SoluzionSocket;
+const createSocket = (url: string) => {
+  const socket = io(url) as SoluzionSocket;
+  socket.url = url;
+  return socket;
+};
 
-export const SocketIOCommon = ({ children }: PropsWithChildren) => {
+export const SocketIOCommon = ({
+  children,
+  title,
+}: PropsWithChildren<{ title: string }>) => {
   const [serverUrl, setServerUrl] = useState(
     process.env.NEXT_PUBLIC_DEFAULT_SERVER_URL as string,
   );
@@ -42,19 +53,52 @@ export const SocketIOCommon = ({ children }: PropsWithChildren) => {
       ? (undefined as unknown as SoluzionSocket)
       : createSocket(serverUrl),
   );
-  const [connectionStatus, setConnectionStatus] = useState(false);
-  const [username, setUsername] = useLocalStorage("username", "Client");
-  const [roles, role] = useSet(new Set([0, 1, 2, 3]));
+  const [isConnected, setIsConnected] = useState<boolean | null>(null);
+  const [username, setUsername] = useSessionStorage("username", "Client");
+  const [roleInfo, setRoleInfo] = useState([] as Role[]);
+  const [roles, roleSet] = useSet(new Set<number>([]));
   const [gameStarted, setGameStarted] = useState(false);
+  const [sid, setSid] = useState("");
+
+  const randomRoomId = () => crypto.randomUUID().substring(0, 4).toUpperCase();
+  const [roomId, setRoomId] = useState(randomRoomId());
+
+  const [rooms, roomList] = useList([] as Room[]);
+
+  const currentRoom = rooms.find((room) =>
+    room.players.some((player) => player.sid === sid),
+  );
+  const isInRoom = !!currentRoom;
 
   useEffect(() => {
+    setTimeout(() => {
+      if (!socket.connected) {
+        setIsConnected(false);
+      }
+    }, 2000);
+
+    roomList.clear();
+
     socket.on("connect", () => {
-      setConnectionStatus(true);
+      setIsConnected(true);
       console.log("Client Connected");
+
+      socket.emit("list_roles", {}, ({ roles }) => {
+        setRoleInfo(roles);
+      });
+      socket.emit("list_rooms", {}, ({ rooms }) => {
+        roomList.set(rooms);
+      });
     });
+
     socket.on("disconnect", () => {
-      setConnectionStatus(false);
+      setIsConnected(false);
+      roomList.clear();
       console.log("Client Disconnected");
+    });
+
+    socket.on("your_sid", ({ sid }) => {
+      setSid(sid);
     });
 
     socket.onAny((event, args) => {
@@ -65,21 +109,69 @@ export const SocketIOCommon = ({ children }: PropsWithChildren) => {
       setGameStarted(true);
     });
 
+    socket.on("room_changed", (room) => {
+      roomList.update((r) => r.room == room.room, room);
+    });
+
+    socket.on("room_created", ({ room, owner_sid }) => {
+      roomList.push({ room, owner: owner_sid, in_game: false, players: [] });
+    });
+
+    socket.on("room_deleted", ({ room }) => {
+      roomList.filter((r, i, rooms) => r.room != room);
+    });
+
     return () => {
       socket.disconnect();
       socket.close();
     };
   }, [socket]);
 
-  const handleConnect = () => {};
+  useDebounce(
+    () => {
+      if (serverUrl === socket.url) return;
 
-  // TODO remake socket for URL change
+      if (socket.connected) {
+        socket.disconnect();
+      }
+      socket.close();
+      setIsConnected(null);
+
+      setSocket(createSocket(serverUrl));
+    },
+    1000,
+    [serverUrl],
+  );
+
+  useDebounce(
+    () => {
+      if (socket?.connected) {
+        socket.emit("set_roles", { roles: [...roles] });
+      }
+    },
+    500,
+    [roles],
+  );
+
+  useDebounce(
+    () => {
+      if (username && socket?.connected) {
+        socket.emit("set_name", { name: username });
+      }
+    },
+    500,
+    [username],
+  );
+
+  const [errorTitle, setErrorTitle] = useState("");
+  const [errorText, setErrorText] = useState("");
 
   return (
     <>
       {gameStarted || (
         <Container>
-          <Row className="align-items-center m-2">
+          {title && <h1 className={"text-center m-2"}>{title}</h1>}
+          <Row className={"align-items-center m-2 g-3 justify-content-center"}>
             <Col md={4}>
               <Form.Label>Server URL</Form.Label>
               <div className={"position-relative"}>
@@ -89,7 +181,13 @@ export const SocketIOCommon = ({ children }: PropsWithChildren) => {
                   value={serverUrl}
                   onChange={(e) => setServerUrl(e.target.value)}
                 />
-                <div></div>
+                <div
+                  className={"end-0 position-absolute absolute-centered-y me-2"}
+                >
+                  <Indicator
+                    status={socket?.url === serverUrl ? isConnected : null}
+                  />
+                </div>
               </div>
             </Col>
             <Col md={2}>
@@ -101,79 +199,179 @@ export const SocketIOCommon = ({ children }: PropsWithChildren) => {
                 onChange={(e) => setUsername(e.target.value)}
               />
             </Col>
-            <Col md={1}>
-              <Form.Label>Roles</Form.Label>
-              <Dropdown>
-                <DropdownToggle>
-                  {orderBy([...roles], (r) => r).join(" ")}
-                </DropdownToggle>
-                <DropdownMenu className={"py-0"}>
-                  {[0, 1, 2, 3].map((i) => (
-                    <DropdownItem
-                      active={role.has(i)}
-                      key={i}
-                      className={"my-2 rounded-2"}
-                      onClick={() =>
-                        role.has(i) ? role.remove(i) : role.add(i)
-                      }
-                    >
-                      Player {i}
-                    </DropdownItem>
-                  ))}
-                </DropdownMenu>
-              </Dropdown>
-            </Col>
-            <Col md={5}>
-              <Form.Label>Actions</Form.Label>
-              <Row>
-                <Col>
-                  <Button
-                    className="w-100"
-                    variant="primary"
-                    onClick={() => socket.emit("create_room", { room: "room" })}
+          </Row>
+          <h3 className={"text-center my-3"}>Rooms</h3>
+          <Row className={"g-3 justify-content-center"}>
+            {rooms.map((room) => {
+              const currentRoom = room.players.some(
+                (player) => player.sid === sid,
+              );
+              const owner = room.owner === sid;
+              return (
+                <Col md={4} key={room.room}>
+                  <Card
+                    className={
+                      "text-center p-3 d-flex flex-column h-100 shadow-sm justify-content-between"
+                    }
                   >
-                    Create Room
-                  </Button>
+                    <h5>{room.room}</h5>
+                    {room.players.map((player) => (
+                      <div
+                        key={player.name}
+                        className={
+                          "d-flex justify-content-center align-items-center my-2"
+                        }
+                      >
+                        {player.name}
+                        {player.sid === sid ? (
+                          <Dropdown autoClose={"outside"} className={"ms-2"}>
+                            <DropdownToggle size={"sm"} className={"text-wrap"}>
+                              {[...roles]
+                                .sort()
+                                .map((r) => roleInfo[r].name)
+                                .join(", ") || "No Roles"}
+                            </DropdownToggle>
+                            <DropdownMenu className={"py-0"}>
+                              {roleInfo.map((role, i) => (
+                                <DropdownItem
+                                  active={roleSet.has(i)}
+                                  key={i}
+                                  className={"my-2 rounded-2"}
+                                  onClick={() =>
+                                    roleSet.has(i)
+                                      ? roleSet.remove(i)
+                                      : roleSet.add(i)
+                                  }
+                                >
+                                  {role.name} (min {role.min}, max {role.max})
+                                </DropdownItem>
+                              ))}
+                            </DropdownMenu>
+                          </Dropdown>
+                        ) : (
+                          <>
+                            {" "}
+                            (
+                            {player.roles
+                              .sort()
+                              .map((r) => roleInfo[r].name)
+                              .join(", ") || "No Roles"}
+                            )
+                          </>
+                        )}
+                      </div>
+                    ))}
+                    {!currentRoom && (
+                      <Button
+                        size={"sm"}
+                        className="w-50 mt-3 mx-auto"
+                        variant={"primary"}
+                        onClick={() => {
+                          socket.emit("join_room", {
+                            room: room.room,
+                            username: username || null,
+                          });
+                          socket.emit("set_roles", { roles: [...roles] });
+                        }}
+                        disabled={room.in_game}
+                      >
+                        {room.in_game ? "In Game" : "Join"}
+                      </Button>
+                    )}
+                    {currentRoom && (
+                      <Button
+                        size={"sm"}
+                        className="w-50 mt-3 mx-auto"
+                        variant={"danger"}
+                        onClick={() => socket.emit("leave_room", {})}
+                      >
+                        Leave
+                      </Button>
+                    )}
+                    {owner && currentRoom && (
+                      <Button
+                        size={"sm"}
+                        className="w-50 mt-3 mx-auto"
+                        variant="success"
+                        onClick={() =>
+                          socket.emit("start_game", {}, ({ error } = {}) => {
+                            if (error) {
+                              setErrorTitle(error.type);
+                              setErrorText(error.message || "");
+                            }
+                          })
+                        }
+                      >
+                        Start Game
+                      </Button>
+                    )}
+                    {room.players.length === 0 && (
+                      <Button
+                        size={"sm"}
+                        className="w-50 mt-3 mx-auto"
+                        variant="danger"
+                        onClick={() =>
+                          socket.emit("delete_room", { room: room.room })
+                        }
+                      >
+                        Delete
+                      </Button>
+                    )}
+                  </Card>
                 </Col>
-                <Col>
+              );
+            })}
+            {!isInRoom && (
+              <Col md={4} className={"text-center"}>
+                <div
+                  className={
+                    "text-center p-3 d-flex flex-column h-100 justify-content-between"
+                  }
+                >
+                  <Form.Label>Room ID</Form.Label>
+                  <Form.Control
+                    className={"w-25 mx-auto mb-3 text-center"}
+                    type="text"
+                    placeholder="Room ID"
+                    value={roomId}
+                    onChange={(e) => setRoomId(e.target.value)}
+                  />
                   <Button
-                    className="w-100"
+                    className="w-50 mx-auto"
+                    size={"sm"}
                     variant="primary"
                     onClick={() => {
+                      socket.emit("create_room", { room: roomId });
                       socket.emit("join_room", {
-                        room: "room",
-                        username: username || null,
+                        room: roomId,
+                        username: username || "Client",
                       });
-                      socket.emit("set_roles", { roles: [...roles] });
+                      setRoomId(randomRoomId());
                     }}
+                    disabled={isConnected !== true || isInRoom}
                   >
-                    Join Room
+                    Create
                   </Button>
-                </Col>
-                <Col>
-                  <Button
-                    className="w-100"
-                    variant="success"
-                    onClick={() => socket.emit("start_game", {})}
-                  >
-                    Start Game
-                  </Button>
-                </Col>
-              </Row>
-            </Col>
-            {/*<Col md={2}>
-            <Alert variant={connectionStatus ? "success" : "danger"}>
-              {connectionStatus ? "Connected!" : "Not Connected"}
-            </Alert>
-          </Col>*/}
+                </div>
+              </Col>
+            )}
           </Row>
         </Container>
       )}
       <SocketContext.Provider
-        value={{ socket, url: serverUrl, isConnected: connectionStatus }}
+        value={{ socket, serverUrl, isConnected, roleInfo, currentRoom }}
       >
         {children}
       </SocketContext.Provider>
+      <Modal show={!!errorText} onHide={() => setErrorText("")}>
+        <Modal.Header closeButton>
+          <Modal.Title>{errorTitle || "Error"}</Modal.Title>
+        </Modal.Header>
+
+        <Modal.Body>
+          <p>{errorText}</p>
+        </Modal.Body>
+      </Modal>
     </>
   );
 };
