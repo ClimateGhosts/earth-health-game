@@ -1,0 +1,27 @@
+html {
+  font-size: 14px;
+}
+
+.pointer-events-none {
+  pointer-events: none !important;
+}
+
+.pointer-events-auto {
+  pointer-events: auto !important;
+}
+
+.absolute-centered {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.absolute-centered-x {
+  left: 50%;
+  transform: translate(-50%, 0);
+}
+
+.absolute-centered-y {
+  top: 50%;
+  transform: translate(0, -50%);
+}

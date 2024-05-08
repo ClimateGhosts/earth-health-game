@@ -1,0 +1,444 @@
+{
+  "world": {
+    "regions": {
+      "Aetheria": {
+        "name": "Aetheria",
+        "current_player": 2,
+        "region_type": {
+          "_value_": "Woods",
+          "_name_": "WOODS",
+          "__objclass__": {
+            "py/type": "__main__.RegionType"
+          },
+          "_sort_order_": 3
+        },
+        "health": 5,
+        "x": 0,
+        "y": 0,
+        "last_modified": -1
+      },
+      "Galadria": {
+        "name": "Galadria",
+        "current_player": 3,
+        "region_type": {
+          "_value_": "Woods",
+          "_name_": "WOODS",
+          "__objclass__": {
+            "py/type": "__main__.RegionType"
+          },
+          "_sort_order_": 3
+        },
+        "health": 5,
+        "x": 0,
+        "y": 1,
+        "last_modified": -1
+      },
+      "Utopia": {
+        "name": "Utopia",
+        "current_player": 1,
+        "region_type": {
+          "_value_": "Mountain",
+          "_name_": "MOUNTAIN",
+          "__objclass__": {
+            "py/type": "__main__.RegionType"
+          },
+          "_sort_order_": 1
+        },
+        "health": 5,
+        "x": 0,
+        "y": 2,
+        "last_modified": -1
+      },
+      "Avalon": {
+        "name": "Avalon",
+        "current_player": 0,
+        "region_type": {
+          "_value_": "Woods",
+          "_name_": "WOODS",
+          "__objclass__": {
+            "py/type": "__main__.RegionType"
+          },
+          "_sort_order_": 3
+        },
+        "health": 5,
+        "x": 0,
+        "y": 3,
+        "last_modified": -1
+      },
+      "Atlantica": {
+        "name": "Atlantica",
+        "current_player": 0,
+        "region_type": {
+          "_value_": "Plains",
+          "_name_": "PLAINS",
+          "__objclass__": {
+            "py/type": "__main__.RegionType"
+          },
+          "_sort_order_": 2
+        },
+        "health": 5,
+        "x": 1,
+        "y": 0,
+        "last_modified": -1
+      },
+      "Olympia": {
+        "name": "Olympia",
+        "current_player": 2,
+        "region_type": {
+          "_value_": "Plains",
+          "_name_": "PLAINS",
+          "__objclass__": {
+            "py/type": "__main__.RegionType"
+          },
+          "_sort_order_": 2
+        },
+        "health": 5,
+        "x": 1,
+        "y": 1,
+        "last_modified": -1
+      },
+      "Excalibur": {
+        "name": "Excalibur",
+        "current_player": 0,
+        "region_type": {
+          "_value_": "Mountain",
+          "_name_": "MOUNTAIN",
+          "__objclass__": {
+            "py/type": "__main__.RegionType"
+          },
+          "_sort_order_": 1
+        },
+        "health": 5,
+        "x": 1,
+        "y": 2,
+        "last_modified": -1
+      },
+      "Arcadia": {
+        "name": "Arcadia",
+        "current_player": 3,
+        "region_type": {
+          "_value_": "Woods",
+          "_name_": "WOODS",
+          "__objclass__": {
+            "py/type": "__main__.RegionType"
+          },
+          "_sort_order_": 3
+        },
+        "health": 5,
+        "x": 1,
+        "y": 3,
+        "last_modified": -1
+      },
+      "Seraphina": {
+        "name": "Seraphina",
+        "current_player": 2,
+        "region_type": {
+          "_value_": "Mesa",
+          "_name_": "MESA",
+          "__objclass__": {
+            "py/type": "__main__.RegionType"
+          },
+          "_sort_order_": 4
+        },
+        "health": 5,
+        "x": 2,
+        "y": 0,
+        "last_modified": -1
+      },
+      "Elysium": {
+        "name": "Elysium",
+        "current_player": 1,
+        "region_type": {
+          "_value_": "Mesa",
+          "_name_": "MESA",
+          "__objclass__": {
+            "py/type": "__main__.RegionType"
+          },
+          "_sort_order_": 4
+        },
+        "health": 5,
+        "x": 2,
+        "y": 1,
+        "last_modified": -1
+      },
+      "Astoria": {
+        "name": "Astoria",
+        "current_player": 3,
+        "region_type": {
+          "_value_": "Mesa",
+          "_name_": "MESA",
+          "__objclass__": {
+            "py/type": "__main__.RegionType"
+          },
+          "_sort_order_": 4
+        },
+        "health": 5,
+        "x": 2,
+        "y": 2,
+        "last_modified": -1
+      },
+      "Celestia": {
+        "name": "Celestia",
+        "current_player": 2,
+        "region_type": {
+          "_value_": "Woods",
+          "_name_": "WOODS",
+          "__objclass__": {
+            "py/type": "__main__.RegionType"
+          },
+          "_sort_order_": 3
+        },
+        "health": 5,
+        "x": 2,
+        "y": 3,
+        "last_modified": -1
+      },
+      "Nova Arcadia": {
+        "name": "Nova Arcadia",
+        "current_player": 2,
+        "region_type": {
+          "_value_": "Woods",
+          "_name_": "WOODS",
+          "__objclass__": {
+            "py/type": "__main__.RegionType"
+          },
+          "_sort_order_": 3
+        },
+        "health": 5,
+        "x": 3,
+        "y": 0,
+        "last_modified": -1
+      },
+      "Aurora": {
+        "name": "Aurora",
+        "current_player": 1,
+        "region_type": {
+          "_value_": "Mountain",
+          "_name_": "MOUNTAIN",
+          "__objclass__": {
+            "py/type": "__main__.RegionType"
+          },
+          "_sort_order_": 1
+        },
+        "health": 5,
+        "x": 3,
+        "y": 1,
+        "last_modified": -1
+      },
+      "Eden": {
+        "name": "Eden",
+        "current_player": 0,
+        "region_type": {
+          "_value_": "Mountain",
+          "_name_": "MOUNTAIN",
+          "__objclass__": {
+            "py/type": "__main__.RegionType"
+          },
+          "_sort_order_": 1
+        },
+        "health": 5,
+        "x": 3,
+        "y": 2,
+        "last_modified": -1
+      },
+      "Mythos": {
+        "name": "Mythos",
+        "current_player": 1,
+        "region_type": {
+          "_value_": "Mesa",
+          "_name_": "MESA",
+          "__objclass__": {
+            "py/type": "__main__.RegionType"
+          },
+          "_sort_order_": 4
+        },
+        "health": 5,
+        "x": 3,
+        "y": 3,
+        "last_modified": -1
+      },
+      "Zion": {
+        "name": "Zion",
+        "current_player": 3,
+        "region_type": {
+          "_value_": "Mesa",
+          "_name_": "MESA",
+          "__objclass__": {
+            "py/type": "__main__.RegionType"
+          },
+          "_sort_order_": 4
+        },
+        "health": 5,
+        "x": 4,
+        "y": 0,
+        "last_modified": -1
+      },
+      "Elysian Fields": {
+        "name": "Elysian Fields",
+        "current_player": 0,
+        "region_type": {
+          "_value_": "Woods",
+          "_name_": "WOODS",
+          "__objclass__": {
+            "py/type": "__main__.RegionType"
+          },
+          "_sort_order_": 3
+        },
+        "health": 5,
+        "x": 4,
+        "y": 1,
+        "last_modified": -1
+      },
+      "Nirvana": {
+        "name": "Nirvana",
+        "current_player": 3,
+        "region_type": {
+          "_value_": "Mountain",
+          "_name_": "MOUNTAIN",
+          "__objclass__": {
+            "py/type": "__main__.RegionType"
+          },
+          "_sort_order_": 1
+        },
+        "health": 5,
+        "x": 4,
+        "y": 2,
+        "last_modified": -1
+      },
+      "Valoria": {
+        "name": "Valoria",
+        "current_player": 1,
+        "region_type": {
+          "_value_": "Plains",
+          "_name_": "PLAINS",
+          "__objclass__": {
+            "py/type": "__main__.RegionType"
+          },
+          "_sort_order_": 2
+        },
+        "health": 5,
+        "x": 4,
+        "y": 3,
+        "last_modified": -1
+      }
+    },
+    "map": [
+      "Aetheria",
+      "Galadria",
+      "Utopia",
+      "Avalon",
+      "Atlantica",
+      "Olympia",
+      "Excalibur",
+      "Arcadia",
+      "Seraphina",
+      "Elysium",
+      "Astoria",
+      "Celestia",
+      "Nova Arcadia",
+      "Aurora",
+      "Eden",
+      "Mythos",
+      "Zion",
+      "Elysian Fields",
+      "Nirvana",
+      "Valoria"
+    ],
+    "region_count": 20,
+    "width": 5,
+    "height": 4
+  },
+  "stat_disasters": [],
+  "time": 0,
+  "current_player": 0,
+  "global_badness": 5,
+  "players": [
+    {
+      "player_id": 0,
+      "money": 100,
+      "regions_owned": 5
+    },
+    {
+      "player_id": 1,
+      "money": 100,
+      "regions_owned": 5
+    },
+    {
+      "player_id": 2,
+      "money": 100,
+      "regions_owned": 5
+    },
+    {
+      "player_id": 3,
+      "money": 100,
+      "regions_owned": 5
+    }
+  ],
+  "current_disasters": [],
+  "cataclysm_history": [
+    []
+  ],
+  "disaster_buffer": [
+    {
+      "region": "Excalibur",
+      "disaster": {
+        "_value_": "Fire",
+        "_name_": "FIRE",
+        "__objclass__": {
+          "py/type": "__main__.DisasterType"
+        },
+        "_sort_order_": 1
+      },
+      "damage": 3
+    },
+    {
+      "region": "Seraphina",
+      "disaster": {
+        "_value_": "Windstorm",
+        "_name_": "WINDSTORM",
+        "__objclass__": {
+          "py/type": "__main__.DisasterType"
+        },
+        "_sort_order_": 3
+      },
+      "damage": 5
+    },
+    {
+      "region": "Utopia",
+      "disaster": {
+        "_value_": "Windstorm",
+        "_name_": "WINDSTORM",
+        "__objclass__": {
+          "py/type": "__main__.DisasterType"
+        },
+        "_sort_order_": 3
+      },
+      "damage": 6
+    },
+    {
+      "region": "Excalibur",
+      "disaster": {
+        "_value_": "Flood",
+        "_name_": "FLOOD",
+        "__objclass__": {
+          "py/type": "__main__.DisasterType"
+        },
+        "_sort_order_": 2
+      },
+      "damage": 2
+    },
+    {
+      "region": "Aetheria",
+      "disaster": {
+        "_value_": "Flood",
+        "_name_": "FLOOD",
+        "__objclass__": {
+          "py/type": "__main__.DisasterType"
+        },
+        "_sort_order_": 2
+      },
+      "damage": 5
+    }
+  ],
+  "current_region": "Avalon"
+}

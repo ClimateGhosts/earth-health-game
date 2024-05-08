@@ -1,16 +1,46 @@
 {
-  "name": "shared",
-  "description": "Common type generation for our soluzion problem and client",
+  "name": "webclient",
+  "description": "Web based client for the earth health game soluzion server",
+  "packageManager": "yarn@1.22.18",
   "dependencies": {
+    "bootstrap": "^5.1.3",
+    "classnames": "^2.3.1",
+    "cross-env": "^7.0.3",
+    "d3-geo": "^3.1.1",
+    "d3-interpolate": "^3.0.1",
+    "d3-scale": "^4.0.2",
+    "lodash": "^4.17.21",
+    "next": "^13.3.0",
     "quicktype": "^23.0.158",
+    "react": "^18.2.0",
+    "react-bootstrap": "^2.7.2",
+    "react-bootstrap-icons": "^1.10.3",
+    "react-code-blocks": "^0.1.6",
+    "react-div-100vh": "^0.7.0",
+    "react-dom": "^18.2.0",
+    "react-simple-maps": "^3.0.0",
+    "react-use": "^17.4.0",
+    "sass": "^1.77.0",
+    "socket.io-client": "^4.7.5",
     "typescript": "^5.4.0"
   },
   "devDependencies": {
+    "@types/bootstrap": "^5.1.6",
+    "@types/lodash": "^4.14.194",
+    "@types/node": "18.15.11",
+    "@types/react": "^18.0.33",
+    "@types/react-simple-maps": "^3.0.4",
+    "gh-pages": "^5.0.0",
     "nodemon": "^3.1.0",
-    "prettier": "^3.2.5"
+    "prettier": "^3.2.5",
+    "ts-node": "^10.9.1"
   },
   "scripts": {
-    "dev": "nodemon",
-    "generate": "quicktype types.ts -o ../soluzion/types.py"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "npx serve@latest out",
+    "generateState": "quicktype src/types/state.json -o src/types/state.ts",
+    "pages": "gh-pages -t -d out",
+    "deploy": "cross-env CI=true yarn build && yarn pages"
   }
 }

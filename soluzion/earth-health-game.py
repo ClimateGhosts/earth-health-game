@@ -326,12 +326,15 @@ class WorldState:
             width += 1
             height = region_count // width  # Adjust height to maintain squareness
 
-        # Populate the (width, height) world with regions # TODO more clever world generation, continents, perlin noise, etc
+        names = region_names.copy()
+
+        # Populate the (width, height) world with regions
+        # TODO more clever world generation, continents, perlin noise, etc
         for x in range(width):
             for y in range(height):
                 region_type = random.choice(playable_regions)
-                name = random.choice(region_names)
-                region_names.remove(name)
+                name = random.choice(names)
+                names.remove(name)
                 self.regions[name] = RegionState(
                     name=name,
                     current_player=-1,
@@ -830,3 +833,8 @@ TRANSITIONS = [
 ROLES = [{"name": f"Player {i + 1}", "min": 1, "max": 1} for i in range(PLAYERS)]
 
 # endregion
+
+"""
+with open("../webclient/src/types/state.json", "w") as outfile:
+    outfile.write(State().serialize())
+"""

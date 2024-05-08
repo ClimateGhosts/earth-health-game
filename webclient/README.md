@@ -5,9 +5,3 @@ Install required packages
 ```shell
 npm install
 ```
-
-Generate Types
-
-```shell
-npm run generate
-```

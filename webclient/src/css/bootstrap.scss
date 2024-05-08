@@ -1,0 +1,33 @@
+@import "../../node_modules/bootstrap/scss/functions";
+@import "../../node_modules/bootstrap/scss/variables";
+
+$grid-breakpoints: (
+        xs: 0,
+        sm: 576px,
+        md: 768px,
+        lg: 992px,
+        xl: 1200px,
+        xxl: 1400px,
+        xxxl: 1800px
+);
+
+$theme-colors: (
+        "primary": $primary,
+        "secondary": $secondary,
+        "success": $success,
+        "info": $info,
+        "warning": $warning,
+        "danger": $danger,
+        "light": $gray-300,
+        "dark": $dark
+);
+
+@import "../../node_modules/bootstrap/scss/bootstrap";
+
+:root {
+  --bs-font-sans-serif: 'monospace', monospace;
+  --bs-font-monospace: 'monospace', monospace;
+}
+
+$font-family-base: var(--bs-font-sans-serif);
+$font-family-monospace: var(--bs-font-monospace);

@@ -1,4 +1,0 @@
-{
-  "watch": ["types.ts"],
-  "exec": "npm run generate"
-}
