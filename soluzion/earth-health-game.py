@@ -41,17 +41,32 @@ class Color:
     MAGENTA = "\033[95m"
     CYAN = "\033[96m"
     WHITE = "\033[97m"
+    ORANGE = "\033[33m"
+    PURPLE = "\033[105m"
     RESET = "\033[0m"
 
 
 class DisasterType(Enum):
+    # Singleton Disasters
     EARTHQUAKE = "Earthquake"
     FIRE = "Fire"
     FLOOD = "Flood"
     WINDSTORM = "Windstorm"
 
+    # Disaster Pairs
+    FIRESTORM = "Firestorm (Fire + Windstorm)"
+    FIREFLOOD = "Fireflood (Fire + Flood)"
+    FIREQUAKE = "Firequake (Fire + Earthquake)"
+    APOCALYPSE = "Apocalypse (Fire + Earthquake + Flood + Windstorm)"
+
     def __str__(self):
         return f"{self.color()}{self.value}{Color.RESET}"
+
+    def __eq__(self, other):
+        return self.name == other.name
+
+    def __hash__(self):
+        return hash(self.name)
 
     def color(self):
         if self == self.EARTHQUAKE:
@@ -62,6 +77,14 @@ class DisasterType(Enum):
             return Color.BLUE
         elif self == self.WINDSTORM:
             return Color.YELLOW
+        elif self == self.FIRESTORM:
+            return Color.ORANGE
+        elif self == self.FIREQUAKE:
+            return Color.RED
+        elif self == self.FIREFLOOD:
+            return Color.BLUE
+        elif self == self.APOCALYPSE:
+            return Color.PURPLE
         else:
             return Color.RESET
 
@@ -124,11 +147,58 @@ disaster_matrix: dict[DisasterType, dict[RegionType, int]] = {
         RegionType.WOODS: -2,
         RegionType.MOUNTAIN: 2,
         RegionType.OCEAN: 0,
+    },  # TODO: change the new ones
+    DisasterType.FIRESTORM: {
+        RegionType.MESA: 1,
+        RegionType.PLAINS: -1,
+        RegionType.WOODS: -2,
+        RegionType.MOUNTAIN: 2,
+        RegionType.OCEAN: 0,
+    },
+    DisasterType.FIREQUAKE: {
+        RegionType.MESA: 1,
+        RegionType.PLAINS: -1,
+        RegionType.WOODS: -2,
+        RegionType.MOUNTAIN: 2,
+        RegionType.OCEAN: 0,
+    },
+    DisasterType.APOCALYPSE: {
+        RegionType.MESA: 1,
+        RegionType.PLAINS: -1,
+        RegionType.WOODS: -2,
+        RegionType.MOUNTAIN: 2,
+        RegionType.OCEAN: 0,
+    },
+    DisasterType.FIREFLOOD: {
+        RegionType.MESA: 1,
+        RegionType.PLAINS: -1,
+        RegionType.WOODS: -2,
+        RegionType.MOUNTAIN: 2,
+        RegionType.OCEAN: 0,
     },
 }
 
-
 # TODO disaster compounding
+disaster_comb_matrix: dict[DisasterType, [DisasterType]] = {
+    DisasterType.APOCALYPSE: {
+        DisasterType.FIRE,
+        DisasterType.WINDSTORM,
+        DisasterType.EARTHQUAKE,
+        DisasterType.FLOOD,
+    },
+    DisasterType.FIRESTORM: {
+        DisasterType.FIRE,
+        DisasterType.WINDSTORM,
+    },
+    DisasterType.FIREFLOOD: {
+        DisasterType.FIRE,
+        DisasterType.FLOOD,
+    },
+    DisasterType.FIREQUAKE: {
+        DisasterType.FIRE,
+        DisasterType.WINDSTORM,
+    },
+}
 
 
 @dataclass
@@ -143,6 +213,12 @@ class Devastation:
 
     def __str__(self):
         return f"{self.disaster} in {self.region} ({self.damage} damage)"
+
+    def __eq__(self, other):
+        return self.region == other.region and self.damage == other.damage and self.disaster == other.disaster
+
+    def __hash__(self):
+        return hash((self.region, self.damage, self.disaster))
 
 
 """World"""
@@ -190,6 +266,9 @@ class RegionState:
 
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
+
+    def __hash__(self):
+        return hash((self.name, self.x, self.y))
 
     def rename(self, new_name):  # TODO allow vanity access
         self.name = new_name
@@ -294,7 +373,8 @@ class WorldState:
         for p in players:
             for i in range(
                     p.regions_owned
-            ):  # This assumes there will always be enough regions. The last player has the "least" choice if we hardcode balancing.
+            ):  # This assumes there will always be enough regions. The last player has the "least" choice if we
+                # hardcode balancing.
                 # Randomly select a region from the world. If it is not ocean, assign it. Otherwise, try again.
                 if not all(player.regions_owned <= 0 for player in players):
                     while True:
@@ -337,6 +417,9 @@ class State:
         self.disaster_buffer: list[Devastation] = (
             []
         )  # Might be added to, by a Climate Ghost
+
+        # Disasters to be processed and compounded
+        self.compound_buffer: map[RegionState: list[Devastation]] = {}
 
         self.generate_disaster_buffer()
         self.current_region = self.next_region()
@@ -396,8 +479,6 @@ class State:
 
     def goal_message(self):
         alive_players = [player for player in self.players if player.regions_owned > 0]
-        # print("these are alive_players: ", alive_players)
-        # print("these are all players: ", self.players)
         msg = "The Game Has Ended!\n"
 
         if len(alive_players) == 0:
@@ -440,16 +521,42 @@ class State:
 
         self.current_disasters.clear()
 
-        for devestation in self.disaster_buffer:
+        for devastation in self.disaster_buffer:
             if random.random() > math.pow(
                     DISASTER_CHANCE_FACTOR, self.global_badness
             ):  # Uniform[0,1] > [0,1]^[5,inf) # Initially 0.95^5 = 0.77, 23% chance of disaster
-                self.current_disasters.append(devestation)
-                region = self.world.regions[devestation.region]
-                region_owner = self.players[region.current_player]
+                # at this point we've decided to cast this devastation so we perform compounding
+                region = self.world.regions[devastation.region]
+                print("This is a region: ", region)
 
+                if region not in self.compound_buffer:
+                    self.compound_buffer[region] = []
+                self.compound_buffer[region] = []
+                self.compound_buffer[region].append(devastation)
+
+        combined = {}
+        for region, disasters in self.compound_buffer.items():
+            for mega_disaster, smaller_disasters in disaster_comb_matrix.items():
+                if set(disasters) == smaller_disasters:
+                    combined[region] = [mega_disaster]
+                    break
+            else:
+                combined[region] = disasters
+
+        for region, disasters in self.compound_buffer.items():
+            # This is all after we've combined
+
+            region_owner = self.players[region.current_player]
+
+            devastation_list = []
+            for disaster in disasters:
+                curr_dev = Devastation(region, disaster, disaster.damage)
+                devastation_list.append(curr_dev)
+                self.current_disasters.append(curr_dev)
+
+            for disaster in devastation_list:
                 if region.health > 0:
-                    region.health -= devestation.damage
+                    region.health -= disaster.damage
 
                     if region.health <= 0:
                         # Player loses 1 region counter, and this region cannot be transitioned to.
@@ -487,7 +594,8 @@ class State:
         if len(self.current_disasters) > 0:
             msg += "\nThe following disasters have occurred:"
             for devastation in self.current_disasters:
-                region = self.world.regions[devastation.region]
+                print("This is devastation: ", devastation)
+                region = self.world.regions[devastation.region.name]
                 msg += f"\n {devastation}"
                 if region.health <= 0:
                     msg += f"\n{devastation.region} has been destroyed!"
@@ -549,7 +657,6 @@ class PlayerAction(Basic_Operator):
 
 
 class UpOperator(PlayerAction):
-
     MONEY_GAINED = 10  # TODO tune this (ex: less health = less money)
 
     def __init__(self):
@@ -576,7 +683,6 @@ class UpOperator(PlayerAction):
 
 
 class DownOperator(PlayerAction):
-
     MONEY_REQUIRED = 20  # TODO tune this to depend on health
 
     def __init__(self):
@@ -607,7 +713,6 @@ class NoneOperator(PlayerAction):
 
 
 class SendForeignAidOperator(PlayerAction):
-
     MONEY_REQUIRED = 30  # Fixing the world is expensive, especially far away.
 
     def __init__(self):
