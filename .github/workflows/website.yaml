@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - webclient/**
+      - .github/**
     branches:
       - main
 
