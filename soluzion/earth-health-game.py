@@ -149,32 +149,32 @@ disaster_matrix: dict[DisasterType, dict[RegionType, int]] = {
         RegionType.WOODS: -2,
         RegionType.MOUNTAIN: 2,
         RegionType.OCEAN: 0,
-    },  # TODO: change the new ones
+    },
     DisasterType.FIRESTORM: {
-        RegionType.MESA: 1,
-        RegionType.PLAINS: -1,
-        RegionType.WOODS: -2,
+        RegionType.MESA: 0,
+        RegionType.PLAINS: -2,
+        RegionType.WOODS: -3,
         RegionType.MOUNTAIN: 2,
         RegionType.OCEAN: 0,
     },
     DisasterType.FIREQUAKE: {
         RegionType.MESA: 1,
-        RegionType.PLAINS: -1,
-        RegionType.WOODS: -2,
-        RegionType.MOUNTAIN: 2,
+        RegionType.PLAINS: -2,
+        RegionType.WOODS: -3,
+        RegionType.MOUNTAIN: 1,
         RegionType.OCEAN: 0,
     },
     DisasterType.APOCALYPSE: {
-        RegionType.MESA: 1,
-        RegionType.PLAINS: -1,
-        RegionType.WOODS: -2,
-        RegionType.MOUNTAIN: 2,
-        RegionType.OCEAN: 0,
+        RegionType.MESA: -2,
+        RegionType.PLAINS: -2,
+        RegionType.WOODS: -3,
+        RegionType.MOUNTAIN: -2,
+        RegionType.OCEAN: -1,
     },
     DisasterType.FIREFLOOD: {
-        RegionType.MESA: 1,
-        RegionType.PLAINS: -1,
-        RegionType.WOODS: -2,
+        RegionType.MESA: 2,
+        RegionType.PLAINS: 2,
+        RegionType.WOODS: 2,
         RegionType.MOUNTAIN: 2,
         RegionType.OCEAN: 0,
     },
@@ -422,7 +422,7 @@ class WorldState:
         """
         Apply damage to a region and its neighbors.
         """
-        region = devastation.region
+        region = self.regions[devastation.region]
         damage = devastation.damage
         region.health -= damage
         for neighbor in self.get_adjacent_regions(region):
@@ -650,7 +650,7 @@ class State:
         if len(self.current_disasters) > 0:
             msg += "\nThe following disasters have occurred:"
             for devastation in self.current_disasters:
-                region = self.world.regions[devastation.region.name]
+                region = self.world.regions[devastation.region]
                 msg += f"\n {devastation}"
                 if region.health <= 0:
                     msg += f"\n{devastation.region} has been destroyed!"
@@ -809,8 +809,8 @@ class ClimateGhostOperator(PlayerAction):
         # TODO this should be a transition, but could overlap with turn end
 
         print("The new disaster list is:")
-        for devestation in state.disaster_buffer:
-            print(f" {devestation}")
+        for devastation in state.disaster_buffer:
+            print(f" {devastation}")
 
 
 OPERATORS = [
