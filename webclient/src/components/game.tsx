@@ -35,6 +35,8 @@ export default () => {
     [currentRoom, roleInfo],
   );
 
+  const [gameOver, setGameOver] = useState(false);
+
   useEffect(() => {
     if (!socket) return;
 
@@ -55,6 +57,11 @@ export default () => {
 
     socket.on("transition", ({ message }) => {
       setTransitionText(message);
+    });
+
+    socket.on("game_ended", ({ message }) => {
+      setTransitionText(message);
+      setGameOver(true);
     });
   }, [socket]);
 
@@ -246,11 +253,17 @@ export default () => {
       <Modal
         size={"lg"}
         show={!!transitionText}
-        onHide={() => setTransitionText("")}
+        onHide={() => {
+          setTransitionText("");
+          if (gameOver) {
+            window.location.reload();
+          }
+        }}
         backdrop={"static"}
+        className={"user-select-none"}
       >
         <Modal.Header closeButton>
-          <Modal.Title>Transition</Modal.Title>
+          <Modal.Title>{gameOver ? "Game Over!" : "Transition"}</Modal.Title>
         </Modal.Header>
 
         <Modal.Body>
