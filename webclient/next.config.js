@@ -13,7 +13,7 @@ const nextConfig = {
   env: {
     NEXT_PUBLIC_BASE_PATH: production ? "/earth-health-game" : "",
     NEXT_PUBLIC_DEFAULT_SERVER_URL: production
-      ? "http://tempura.cs.washington.edu:5000"
+      ? "http://tempura.cs.washington.edu:4242"
       : "http://localhost:5000",
   },
 };

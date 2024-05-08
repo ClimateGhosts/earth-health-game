@@ -60,7 +60,8 @@ export const SocketIOCommon = ({
   const [gameStarted, setGameStarted] = useState(false);
   const [sid, setSid] = useState("");
 
-  const randomRoomId = () => crypto.randomUUID().substring(0, 4).toUpperCase();
+  const randomRoomId = () =>
+    Math.round(new Date().getMilliseconds()).toString();
   const [roomId, setRoomId] = useState(randomRoomId());
 
   const [rooms, roomList] = useList([] as Room[]);
