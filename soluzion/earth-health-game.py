@@ -650,7 +650,8 @@ class State:
         if len(self.current_disasters) > 0:
             msg += "\nThe following disasters have occurred:"
             for devastation in self.current_disasters:
-                region = self.world.regions[devastation.region]
+                region = self.world.regions[devastation.region.name]
+                # region = self.world.regions[devastation.region.name] TODO: idk why the above line works
                 msg += f"\n {devastation}"
                 if region.health <= 0:
                     msg += f"\n{devastation.region} has been destroyed!"
