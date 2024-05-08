@@ -218,7 +218,11 @@ class Devastation:
         return f"{self.disaster} in {self.region} ({self.damage} damage)"
 
     def __eq__(self, other):
-        return self.region == other.region and self.damage == other.damage and self.disaster == other.disaster
+        return (
+            self.region == other.region
+            and self.damage == other.damage
+            and self.disaster == other.disaster
+        )
 
     def __hash__(self):
         return hash((self.region, self.damage, self.disaster))
@@ -378,7 +382,7 @@ class WorldState:
         """
         for p in players:
             for i in range(
-                    p.regions_owned
+                p.regions_owned
             ):  # This assumes there will always be enough regions. The last player has the "least" choice if we
                 # hardcode balancing.
                 # Randomly select a region from the world. If it is not ocean, assign it. Otherwise, try again.
@@ -456,7 +460,7 @@ class State:
         )  # Might be added to, by a Climate Ghost
 
         # Disasters to be processed and compounded
-        self.compound_buffer: map[RegionState: list[Devastation]] = {}
+        self.compound_buffer: map[RegionState : list[Devastation]] = {}
 
         self.generate_disaster_buffer()
         self.disaster_buffer = self.generate_disaster_buffer()
