@@ -4,6 +4,8 @@ import random
 from copy import deepcopy
 from typing import List
 
+import jsonpickle
+
 from soluzion import Basic_Operator
 
 # region METADATA
@@ -178,6 +180,7 @@ disaster_matrix: dict[DisasterType, dict[RegionType, int]] = {
     },
 }
 
+
 # TODO disaster compounding
 disaster_comb_matrix: dict[DisasterType, [DisasterType]] = {
     DisasterType.APOCALYPSE: {
@@ -314,11 +317,11 @@ class WorldState:
         self.map: list[str] = []
         self.region_count = region_count
 
-        width = int(region_count ** 0.5)
+        width = int(region_count**0.5)
         height = width
         # This will generate as square of a grid as possible.
         while (
-                width * height < region_count
+            width * height < region_count
         ):  # Increase width if necessary to reach the desired area
             width += 1
             height = region_count // width  # Adjust height to maintain squareness
@@ -380,9 +383,9 @@ class WorldState:
                     while True:
                         region = random.choice(list(self.regions.values()))
                         if (
-                                region.current_player == -1
-                                and region.region_type != RegionType.OCEAN
-                                and region.health > 0
+                            region.current_player == -1
+                            and region.region_type != RegionType.OCEAN
+                            and region.health > 0
                         ):
                             region.current_player = p.player_id
                             break
@@ -391,6 +394,32 @@ class WorldState:
     def reset_ownership(self):
         for region in self.regions.values():
             region.current_player = -1
+
+    def get_adjacent_regions(self, region: RegionState):
+        """
+        Get the regions adjacent to the given region in a 9x9 grid.
+
+        ACTUALLY. I prefer applying a mask of weights to the world, multiplied by disaster damage.
+        """
+        adjacent_regions = []
+        for other_region in self.regions.values():
+            if (
+                abs(region.x - other_region.x) <= 1
+                and abs(region.y - other_region.y) <= 1
+                and region != other_region
+            ):
+                adjacent_regions.append(other_region)
+        return adjacent_regions
+
+    def apply_damage(self, devastation: Devastation):
+        """
+        Apply damage to a region and its neighbors.
+        """
+        region = devastation.region
+        damage = devastation.damage
+        region.health -= damage
+        for neighbor in self.get_adjacent_regions(region):
+            neighbor.health -= damage // 2
 
 
 class State:
@@ -413,7 +442,12 @@ class State:
 
         self.current_disasters: list[Devastation] = (
             []
-        )  # Disasters to be applied per turn
+        )  # Disasters to be applied per turn. Cleared at end of turn.
+
+        self.cataclysm_history: list[list[Devastation]] = [
+            []
+        ]  # Stores all disasters each time step. Created to allow compounding.
+
         self.disaster_buffer: list[Devastation] = (
             []
         )  # Might be added to, by a Climate Ghost
@@ -422,7 +456,11 @@ class State:
         self.compound_buffer: map[RegionState: list[Devastation]] = {}
 
         self.generate_disaster_buffer()
+        self.disaster_buffer = self.generate_disaster_buffer()
         self.current_region = self.next_region()
+
+    def serialize(self):
+        return jsonpickle.encode(self, indent=2, unpicklable=False)
 
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
@@ -442,7 +480,9 @@ class State:
 
             result += "\n"
 
-        if self.time < END_OF_UNIVERSE and not all(p.regions_owned <= 0 for p in self.players):
+        if self.time < END_OF_UNIVERSE and not all(
+            p.regions_owned <= 0 for p in self.players
+        ):
 
             result += f"\nIt is Player {self.current_player}'s turn.\n"
             player = self.players[self.current_player]
@@ -454,7 +494,9 @@ class State:
                 for devastation in self.disaster_buffer:
                     result += f"\n {devastation}"
             else:
-                result += f"You are deciding for {self.world.regions[self.current_region]}.\n"
+                result += (
+                    f"You are deciding for {self.world.regions[self.current_region]}.\n"
+                )
 
         return result
 
@@ -471,14 +513,16 @@ class State:
             region
             for region in self.world.regions.values()
             if region.last_modified < self.time
-               and region.current_player == self.current_player
-               and region.health > 0
+            and region.current_player == self.current_player
+            and region.health > 0
         ]
 
         return current_regions[0].name if len(current_regions) > 0 else ""
 
     def goal_message(self):
         alive_players = [player for player in self.players if player.regions_owned > 0]
+        # print("these are alive_players: ", alive_players)
+        # print("these are all players: ", self.players)
         msg = "The Game Has Ended!\n"
 
         if len(alive_players) == 0:
@@ -490,13 +534,15 @@ class State:
 
         return msg
 
-    def generate_disaster_buffer(self):
+    def generate_disaster_buffer(self) -> list[Devastation]:
 
         current_disaster_types = [
             random.choice(list(DisasterType)) for _ in range(0, MAX_DISASTERS_PER_ROUND)
         ]
 
-        self.disaster_buffer.clear()
+        # self.disaster_buffer.clear()
+
+        new_disaster_buffer = []
 
         for disaster in current_disaster_types:
             region_id = random.choice(
@@ -508,10 +554,13 @@ class State:
             )
             region = self.world.regions[region_id]
             damage = (
-                    DEFAULT_DISASTER_DAMAGE + disaster_matrix[disaster][region.region_type]
+                DEFAULT_DISASTER_DAMAGE
+                + disaster_matrix[disaster][region.region_type]
+                # TODO add compounding
             )
 
-            self.disaster_buffer.append(Devastation(region_id, disaster, damage))
+            new_disaster_buffer.append(Devastation(region_id, disaster, damage))
+        return new_disaster_buffer
 
     def move_time_forward(self):
         """
@@ -523,7 +572,7 @@ class State:
 
         for devastation in self.disaster_buffer:
             if random.random() > math.pow(
-                    DISASTER_CHANCE_FACTOR, self.global_badness
+                DISASTER_CHANCE_FACTOR, self.global_badness
             ):  # Uniform[0,1] > [0,1]^[5,inf) # Initially 0.95^5 = 0.77, 23% chance of disaster
                 # at this point we've decided to cast this devastation so we perform compounding
                 region = self.world.regions[devastation.region]
@@ -562,11 +611,11 @@ class State:
                         # Player loses 1 region counter, and this region cannot be transitioned to.
                         if region_owner.regions_owned != 0:
                             region_owner.regions_owned -= 1
-                        region.player = -1
+                        region.current_player = -1
 
         self.stat_disasters.append(len(self.current_disasters))
 
-        self.generate_disaster_buffer()
+        self.disaster_buffer = self.generate_disaster_buffer()
 
         if self.time % 2 == 0:
             self.region_shuffle()
@@ -594,7 +643,6 @@ class State:
         if len(self.current_disasters) > 0:
             msg += "\nThe following disasters have occurred:"
             for devastation in self.current_disasters:
-                print("This is devastation: ", devastation)
                 region = self.world.regions[devastation.region.name]
                 msg += f"\n {devastation}"
                 if region.health <= 0:
@@ -657,6 +705,7 @@ class PlayerAction(Basic_Operator):
 
 
 class UpOperator(PlayerAction):
+
     MONEY_GAINED = 10  # TODO tune this (ex: less health = less money)
 
     def __init__(self):
@@ -664,8 +713,8 @@ class UpOperator(PlayerAction):
 
     def is_applicable(self, state: State, role=None):
         return (
-                super().is_applicable(state, role)
-                and state.players[state.current_player].regions_owned > 0
+            super().is_applicable(state, role)
+            and state.players[state.current_player].regions_owned > 0
         )
 
     def update_state(self, state: State):
@@ -683,6 +732,7 @@ class UpOperator(PlayerAction):
 
 
 class DownOperator(PlayerAction):
+
     MONEY_REQUIRED = 20  # TODO tune this to depend on health
 
     def __init__(self):
@@ -690,9 +740,9 @@ class DownOperator(PlayerAction):
 
     def is_applicable(self, state: State, role=None):
         return (
-                super().is_applicable(state, role)
-                and state.players[state.current_player].regions_owned > 0
-                and state.players[state.current_player].money >= self.MONEY_REQUIRED
+            super().is_applicable(state, role)
+            and state.players[state.current_player].regions_owned > 0
+            and state.players[state.current_player].money >= self.MONEY_REQUIRED
         )
 
     def update_state(self, state: State):
@@ -713,6 +763,7 @@ class NoneOperator(PlayerAction):
 
 
 class SendForeignAidOperator(PlayerAction):
+
     MONEY_REQUIRED = 30  # Fixing the world is expensive, especially far away.
 
     def __init__(self):
@@ -720,9 +771,9 @@ class SendForeignAidOperator(PlayerAction):
 
     def is_applicable(self, state: State, role=None):
         return (
-                super().is_applicable(state, role)
-                and state.players[state.current_player].regions_owned > 0
-                and state.players[state.current_player].money >= self.MONEY_REQUIRED
+            super().is_applicable(state, role)
+            and state.players[state.current_player].regions_owned > 0
+            and state.players[state.current_player].money >= self.MONEY_REQUIRED
         )
 
     def update_state(self, state: State):
@@ -741,12 +792,12 @@ class ClimateGhostOperator(PlayerAction):
 
     def is_applicable(self, state: State, role=None):
         return (
-                super().is_applicable(state, role)
-                and state.players[state.current_player].regions_owned <= 0
+            super().is_applicable(state, role)
+            and state.players[state.current_player].regions_owned <= 0
         )
 
     def update_state(self, state: State):
-        state.generate_disaster_buffer()
+        state.disaster_buffer = state.generate_disaster_buffer()
 
         # TODO this should be a transition, but could overlap with turn end
 
@@ -755,7 +806,13 @@ class ClimateGhostOperator(PlayerAction):
             print(f" {devestation}")
 
 
-OPERATORS = [UpOperator(), DownOperator(), NoneOperator(), SendForeignAidOperator(), ClimateGhostOperator()]
+OPERATORS = [
+    UpOperator(),
+    DownOperator(),
+    NoneOperator(),
+    SendForeignAidOperator(),
+    ClimateGhostOperator(),
+]
 
 # endregion OPERATORS
 
