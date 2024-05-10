@@ -151,12 +151,6 @@ export default () => {
                             coordinates={centroid}
                             className={"pointer-events-none"}
                           >
-                            {/*<circle
-                                r={0.5}
-                                fill="#FF5533"
-                                stroke="#FFFFFF"
-                                strokeWidth={2}
-                              />*/}
                             <text
                               textAnchor="middle"
                               y={-2}
@@ -203,7 +197,22 @@ export default () => {
               <Row className={"row-cols-1 g-2"}>
                 {state.players.map((player, i) => (
                   <Col key={i}>
-                    Player {i} ({namesByRole[i]}): ${player.money}M
+                    <Row className={"row-cols-1 g-2"}>
+                      <Col>
+                        Player {i} ({namesByRole[i]}): ${player.money}M
+                      </Col>
+                      {Object.values(state.world.regions)
+                        .filter(
+                          (region) =>
+                            region.current_player === player.player_id,
+                        )
+                        .map((region, i) => (
+                          <Col key={i} className={"ms-4"}>
+                            {region.name} ({region.region_type._value_},{" "}
+                            {region.health}❤️)
+                          </Col>
+                        ))}
+                    </Row>
                   </Col>
                 ))}
               </Row>

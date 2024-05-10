@@ -1,7 +1,11 @@
-A simple setup for consistent typing for Soluzion servers and clients via [Quicktype]()
+# Webclient
 
-Install required packages
+This is the webclient for Collaborative Climate Conquest that gets hosted on Github Pages
+
+## Local Development
 
 ```shell
 npm install
+
+npm run dev
 ```

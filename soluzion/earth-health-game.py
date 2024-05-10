@@ -7,6 +7,7 @@ from typing import List
 import jsonpickle
 
 from soluzion import Basic_Operator
+from client_types import GameOptions
 
 # region METADATA
 SOLUZION_VERSION = "4.0"
@@ -239,9 +240,8 @@ TOTAL_REGIONS = 20
 MAX_REGION_HEALTH = 10
 INITIAL_REGION_HEALTH = 5
 """Players"""
-PLAYERS = 4
+MAX_PLAYERS = 4
 STARTING_MONEY = 100
-INITIAL_REGIONS_OWNED = TOTAL_REGIONS // PLAYERS
 
 START_OF_UNIVERSE = -1
 END_OF_UNIVERSE = 5
@@ -293,10 +293,10 @@ class PlayerState:
     Class within state storing the data for a player
     """
 
-    def __init__(self, player_id=0):
+    def __init__(self, player_id: int, regions_owned: int):
         self.player_id = player_id
         self.money = STARTING_MONEY
-        self.regions_owned = INITIAL_REGIONS_OWNED
+        self.regions_owned = regions_owned
 
     def __str__(self):
         return f"Player {self.player_id} with ${self.money}M and {self.regions_owned} region(s)"
@@ -431,7 +431,8 @@ class State:
     State for our initial game
     """
 
-    def __init__(self):
+    def __init__(self, args: dict[str, any] = None):
+        options = GameOptions.from_dict(args) if args is not None else GameOptions(4)
         self.world = WorldState()
         self.stat_disasters: List[int] = (
             []
@@ -439,7 +440,11 @@ class State:
         self.time = 0
         self.current_player = 0
         self.global_badness = STARTING_BADNESS
-        self.players = [PlayerState(player_id) for player_id in range(PLAYERS)]
+        self.player_count = int(options.players)
+        self.players = [
+            PlayerState(player_id, TOTAL_REGIONS // self.player_count)
+            for player_id in range(self.player_count)
+        ]
 
         # Initialize regions, assigning them to players.
         self.world.reassign_governors(self.players)
@@ -700,7 +705,7 @@ class PlayerAction(Basic_Operator):
 
         if state.next_region() == "":
             state.current_player += 1
-            if state.current_player >= PLAYERS:
+            if state.current_player >= state.player_count:
                 state.move_time_forward()
                 state.current_player = 0
 
@@ -832,11 +837,13 @@ TRANSITIONS = [
 
 # region ROLES
 
-ROLES = [{"name": f"Player {i + 1}", "min": 1, "max": 1} for i in range(PLAYERS)]
+ROLES = [
+    {"name": f"Player {i + 1}", "min": 1 if i <= 1 else 0, "max": 1}
+    for i in range(MAX_PLAYERS)
+]
 
 # endregion
 
-"""
-with open("../webclient/src/types/state.json", "w") as outfile:
-    outfile.write(State().serialize())
-"""
+if __name__ == "__main__":
+    with open("../webclient/src/types/state.json", "w") as outfile:
+        outfile.write(State().serialize())

@@ -1,5 +1,7 @@
 # UW CSE Gamification Capstone - Earth Health Game
 
+## Collaborative Climate Contest
+
 ## Requirements
 
 Requires Python 3.9 or higher

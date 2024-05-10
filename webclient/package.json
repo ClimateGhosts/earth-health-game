@@ -38,6 +38,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "npx serve@latest out",
+    "generateTypes": "quicktype src/types/earth-health-game.ts -o ../soluzion/client_types.py",
     "generateState": "quicktype src/types/state.json -o src/types/state.ts",
     "pages": "gh-pages -t -d out",
     "deploy": "cross-env CI=true npm run build && npm run pages"

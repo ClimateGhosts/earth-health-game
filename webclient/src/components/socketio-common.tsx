@@ -21,6 +21,8 @@ import { io } from "socket.io-client";
 import { SoluzionSocket } from "../types/socketio";
 import { useDebounce, useList, useSessionStorage, useSet } from "react-use";
 import Indicator from "./indicator";
+import { GameOptions } from "../types/earth-health-game";
+import _ from "lodash";
 
 type SocketContext = {
   socket?: SoluzionSocket;
@@ -298,12 +300,23 @@ export const SocketIOCommon = ({
                         className="w-50 mt-3 mx-auto"
                         variant="success"
                         onClick={() =>
-                          socket.emit("start_game", {}, ({ error } = {}) => {
-                            if (error) {
-                              setErrorTitle(error.type);
-                              setErrorText(error.message || "");
-                            }
-                          })
+                          socket.emit(
+                            "start_game",
+                            {
+                              args: {
+                                players: _.chain(room.players)
+                                  .flatMap((player) => player.roles)
+                                  .uniq()
+                                  .value().length,
+                              } satisfies GameOptions,
+                            },
+                            ({ error } = {}) => {
+                              if (error) {
+                                setErrorTitle(error.type);
+                                setErrorText(error.message || "");
+                              }
+                            },
+                          )
                         }
                       >
                         Start Game

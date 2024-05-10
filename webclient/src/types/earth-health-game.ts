@@ -12,3 +12,7 @@ export enum DisasterType {
   FLOOD = "Flood",
   WINDSTORM = "Windstorm",
 }
+
+export type GameOptions = {
+  players: number;
+};
