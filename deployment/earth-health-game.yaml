@@ -1,0 +1,181 @@
+#
+# I got permission to deploy this on my work kubernetes cluster :P
+# - James
+#
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: earth-health-game
+  namespace: user-4f88b2bf-bdb7-413c-b346-ab14177cc347
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: earth-health-game
+      app.kubernetes.io/name: earth-health-game
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/instance: earth-health-game
+        app.kubernetes.io/name: earth-health-game
+    spec:
+      nodeSelector:
+        kubernetes.io/os: linux
+      serviceAccountName: earth-health-game
+      containers:
+        - name: earth-health-game
+          image: python:3.9-alpine
+          imagePullPolicy: Always
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+          ports:
+            - containerPort: 5000
+              name: http
+              protocol: TCP
+          command: [ "/bin/sh", "-c" ]
+          args:
+            - |
+              set -ex
+              
+              apk update
+              apk add git
+              
+              git clone https://github.com/ClimateGhosts/earth-health-game.git
+              cd earth-health-game
+              
+              pip install -r requirements.txt
+              
+              soluzion_server soluzion/earth-health-game.py --debug -p 5000  
+
+        - name: github-sidecar
+          image: alpine:latest
+          env:
+            - name: FILE_URLS
+              value: |
+                https://raw.githubusercontent.com/ClimateGhosts/earth-health-game/main/soluzion/earth-health-game.py
+                https://raw.githubusercontent.com/ClimateGhosts/soluzion-server/main/setup.py
+            - name: CHECK_EVERY_SECONDS
+              value: "60"
+          command: [ "/bin/sh", "-c" ]
+          args:
+            - |
+              set -e
+              apk add --no-cache curl
+              mkdir -p /tmp/old
+              while true; do
+                echo "Checking files for changes at $(date)";
+                CHANGES_DETECTED=false;
+                for FILE_URL in $FILE_URLS; do
+                  FILE_NAME=$(echo $FILE_URL | awk -F '/' '{print $NF}');
+                  NEW_FILE_PATH="/tmp/new_$FILE_NAME";
+                  OLD_FILE_PATH="/tmp/old/$FILE_NAME";
+                  curl -s $FILE_URL -o $NEW_FILE_PATH;
+                  if [ -f "$OLD_FILE_PATH" ]; then
+                    if ! diff $NEW_FILE_PATH $OLD_FILE_PATH > /dev/null; then
+                      echo "Change detected in $FILE_NAME";
+                      CHANGES_DETECTED=true;
+                    fi
+                  fi
+                  cp $NEW_FILE_PATH $OLD_FILE_PATH;
+                done;
+                if [ "$CHANGES_DETECTED" = "true" ]; then
+                  echo "Changes were detected in files. Restarting the pod...";
+                  curl -X DELETE "https://kubernetes.default.svc/api/v1/namespaces/$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)/pods/$(hostname)" \
+                      -H "Authorization: Bearer $(cat /var/run/secrets/kubernetes.io/serviceaccount/token)" \
+                      -H 'Accept: application/json' \
+                      -H 'Content-Type: application/json' \
+                      --insecure;
+                else
+                  echo "No changes detected.";
+                fi;
+                sleep $CHECK_EVERY_SECONDS;
+              done
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/name: earth-health-game
+    app.kubernetes.io/instance: earth-health-game
+  name: earth-health-game
+  namespace: user-4f88b2bf-bdb7-413c-b346-ab14177cc347
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/instance: earth-health-game
+    app.kubernetes.io/name: earth-health-game
+  ports:
+    - name: http
+      port: 5000
+      protocol: TCP
+      targetPort: http
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: earth-health-game
+  namespace: user-4f88b2bf-bdb7-413c-b346-ab14177cc347
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/group.name: player-ingress-group
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/target-group-attributes: stickiness.enabled=true,stickiness.lb_cookie.duration_seconds=60,load_balancing.algorithm.type=least_outstanding_requests
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
+    alb.ingress.kubernetes.io/actions.ssl-redirect: '{"Type": "redirect", "RedirectConfig": { "Protocol": "HTTPS", "Port": "443", "StatusCode": "HTTP_301"}}'
+spec:
+  tls:
+    - hosts:
+        - earth-health-game.appmana.com
+  rules:
+    - host: earth-health-game.appmana.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: earth-health-game
+                port:
+                  name: http
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: earth-health-game
+  namespace: user-4f88b2bf-bdb7-413c-b346-ab14177cc347
+rules:
+  - apiGroups: [ "" ]
+    resources: [ "pods" ]
+    verbs: [ "delete" ]
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: earth-health-game
+  namespace: user-4f88b2bf-bdb7-413c-b346-ab14177cc347
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: earth-health-game
+  namespace: user-4f88b2bf-bdb7-413c-b346-ab14177cc347
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: earth-health-game
+subjects:
+  - kind: ServiceAccount
+    name: earth-health-game
+    namespace: user-4f88b2bf-bdb7-413c-b346-ab14177cc347
+

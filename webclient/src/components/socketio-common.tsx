@@ -90,6 +90,9 @@ export const SocketIOCommon = ({
       socket.emit("list_rooms", {}, ({ rooms }) => {
         roomList.set(rooms);
       });
+      socket.emit("info", {}, (info) => {
+        console.log(info);
+      });
     });
 
     socket.on("disconnect", () => {

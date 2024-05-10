@@ -11,12 +11,9 @@ from soluzion import Basic_Operator
 # region METADATA
 SOLUZION_VERSION = "4.0"
 PROBLEM_NAME = "Earth Health"
-PROBLEM_VERSION = "1.0"
+PROBLEM_VERSION = "0.4.0"  # TODO Keep updating this value to make the server deployment always use the latest version
 PROBLEM_AUTHORS = ["Alicia Stepin", "Andrey Risukhin", "James Gale", "Maxim Kuznetsov"]
 PROBLEM_CREATION_DATE = "23-APRIL-2024"
-
-# The following field is mainly for the human solver, via either the Text_SOLUZION_Client.
-# or the SVG graphics client.
 PROBLEM_DESC = """
     Climate change disasters are not independent, but are cumulative and compounding. 
     They lead to changing migration and settlement patterns for animals, people, 
