@@ -69,9 +69,7 @@ export default () => {
 
   const regionFromGeo = (geo: { rsmKey: string }) => {
     const id = parseInt(geo.rsmKey.replace("geo-", ""));
-    const regionName = state!.world.map[id];
-
-    return state!.world.regions[regionName];
+    return state!.world.regions[id];
   };
 
   const [transitionText, setTransitionText] = useState("");
@@ -101,9 +99,7 @@ export default () => {
                 {({ geographies }) => {
                   const geos = _.chain(geographies)
                     .filter((_, i) => i < state.world.region_count)
-                    .orderBy(
-                      (geo) => regionFromGeo(geo).name === selectedRegion,
-                    )
+                    .orderBy((geo) => regionFromGeo(geo).id === selectedRegion)
                     .value();
 
                   return geos
@@ -113,7 +109,7 @@ export default () => {
                       if (region.health <= 0) {
                         color = "#666";
                       }
-                      const selected = selectedRegion === region.name;
+                      const selected = selectedRegion === region.id;
 
                       return (
                         <Geography
@@ -228,7 +224,7 @@ export default () => {
               <h3 className={"text-center"}>
                 Player {state.current_player} (
                 {namesByRole[state.current_player]}) choosing for{" "}
-                <u>{state.current_region}</u>
+                <u>{state.world.regions[state.current_region]?.name}</u>
               </h3>
             </Card>
             <Card

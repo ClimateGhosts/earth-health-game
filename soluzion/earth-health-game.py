@@ -6,8 +6,8 @@ from typing import List
 
 import jsonpickle
 
-from soluzion import Basic_Operator
 from client_types import GameOptions
+from soluzion import Basic_Operator
 
 # region METADATA
 SOLUZION_VERSION = "4.0"
@@ -208,6 +208,7 @@ class Devastation:
     Describe which region is hit by a disaster and for how much damage.
     """
 
+    region_id: int
     region: str
     disaster: DisasterType
     damage: int
@@ -216,11 +217,7 @@ class Devastation:
         return f"{self.disaster} in {self.region} ({self.damage} damage)"
 
     def __eq__(self, other):
-        return (
-            self.region == other.region
-            and self.damage == other.damage
-            and self.disaster == other.disaster
-        )
+        return self.__dict__ == other.__dict__
 
     def __hash__(self):
         return hash((self.region, self.damage, self.disaster))
@@ -257,12 +254,11 @@ class RegionState:
     Class within state storing the data for one region
     """
 
+    id: int
     name: str
     current_player: int
     region_type: RegionType
     health: int
-    x: int
-    y: int
     last_modified: int = START_OF_UNIVERSE
 
     def __str__(self):
@@ -272,7 +268,7 @@ class RegionState:
         return self.__dict__ == other.__dict__
 
     def __hash__(self):
-        return hash((self.name, self.x, self.y))
+        return hash(self.name)
 
     def rename(self, new_name):  # TODO allow vanity access
         self.name = new_name
@@ -314,42 +310,25 @@ class WorldState:
     """
 
     def __init__(self, region_count=TOTAL_REGIONS) -> None:
-        self.regions: dict[str, RegionState] = {}
-        self.map: list[str] = []
+        self.regions: list[RegionState] = []
         self.region_count = region_count
-
-        width = int(region_count**0.5)
-        height = width
-        # This will generate as square of a grid as possible.
-        while (
-            width * height < region_count
-        ):  # Increase width if necessary to reach the desired area
-            width += 1
-            height = region_count // width  # Adjust height to maintain squareness
 
         names = region_names.copy()
 
-        # Populate the (width, height) world with regions
         # TODO more clever world generation, continents, perlin noise, etc
-        for x in range(width):
-            for y in range(height):
-                region_type = random.choice(playable_regions)
-                name = random.choice(names)
-                names.remove(name)
-                self.regions[name] = RegionState(
+        for i in range(region_count):
+            region_type = random.choice(playable_regions)
+            name = random.choice(names)
+            names.remove(name)
+            self.regions.append(
+                RegionState(
+                    id=i,
                     name=name,
                     current_player=-1,
                     region_type=region_type,
                     health=INITIAL_REGION_HEALTH,
-                    x=x,
-                    y=y,
                 )
-                self.map.append(name)
-
-        self.width = width
-        self.height = height
-
-        # num_players: int
+            )
 
         # global_pollution: float
         # global_temperature: float
@@ -358,20 +337,7 @@ class WorldState:
         # global_disasters: float
 
     def __str__(self):
-        result = ""
-        for h in range(self.height):
-            for w in range(self.width):
-                region_id = self.map[h * self.width + w]
-                region = self.regions[region_id]
-                player_index = "p" + str(region.current_player)
-                if region.current_player == -1:
-                    player_index = "X"
-                result += f" {region.region_type.color()}{str(region.region_type)} ({player_index}, {region.health}❤️) "  # {Color.RESET} # TODO add health
-            result += "\n"
-
-        # for region in self.regions:
-        #     result += f"{region}\n"
-        return result
+        return "TODO textual world state that aligns with visualization"
 
     def reassign_governors(self, players: List[PlayerState]):
         """
@@ -385,7 +351,7 @@ class WorldState:
                 # Randomly select a region from the world. If it is not ocean, assign it. Otherwise, try again.
                 if not all(player.regions_owned <= 0 for player in players):
                     while True:
-                        region = random.choice(list(self.regions.values()))
+                        region = random.choice(list(self.regions))
                         if (
                             region.current_player == -1
                             and region.region_type != RegionType.OCEAN
@@ -396,7 +362,7 @@ class WorldState:
                         # TODO ensure this will update by reference
 
     def reset_ownership(self):
-        for region in self.regions.values():
+        for region in self.regions:
             region.current_player = -1
 
     def get_adjacent_regions(self, region: RegionState):
@@ -406,20 +372,16 @@ class WorldState:
         ACTUALLY. I prefer applying a mask of weights to the world, multiplied by disaster damage.
         """
         adjacent_regions = []
-        for other_region in self.regions.values():
-            if (
-                abs(region.x - other_region.x) <= 1
-                and abs(region.y - other_region.y) <= 1
-                and region != other_region
-            ):
-                adjacent_regions.append(other_region)
+
+        # TODO adjacency that makes sense for the visual map
+
         return adjacent_regions
 
     def apply_damage(self, devastation: Devastation):
         """
         Apply damage to a region and its neighbors.
         """
-        region = self.regions[devastation.region]
+        region = self.regions[devastation.region_id]
         damage = devastation.damage
         region.health -= damage
         for neighbor in self.get_adjacent_regions(region):
@@ -432,7 +394,10 @@ class State:
     """
 
     def __init__(self, args: dict[str, any] = None):
-        options = GameOptions.from_dict(args) if args is not None else GameOptions(4)
+        self.options = (
+            GameOptions.from_dict(args) if args is not None else GameOptions(4)
+        )
+
         self.world = WorldState()
         self.stat_disasters: List[int] = (
             []
@@ -440,7 +405,7 @@ class State:
         self.time = 0
         self.current_player = 0
         self.global_badness = STARTING_BADNESS
-        self.player_count = int(options.players)
+        self.player_count = int(self.options.players)
         self.players = [
             PlayerState(player_id, TOTAL_REGIONS // self.player_count)
             for player_id in range(self.player_count)
@@ -462,7 +427,7 @@ class State:
         )  # Might be added to, by a Climate Ghost
 
         # Disasters to be processed and compounded
-        self.compound_buffer: map[RegionState : list[Devastation]] = {}
+        self.compound_buffer: dict[int, list[Devastation]] = {}
 
         self.generate_disaster_buffer()
         self.disaster_buffer = self.generate_disaster_buffer()
@@ -477,13 +442,13 @@ class State:
     def __str__(self):
         result = "\n\n"
 
-        result += f"The year is {2048 + self.time}, and the climate badness is {self.global_badness}.\n\n"
+        result += f"The year is {2050 + self.time * 10}, and the climate badness is {self.global_badness}.\n\n"
 
         result += f"World Map:\n{self.world}\n"
 
         for player in self.players:
             result += f"{player}\n"
-            for region in self.world.regions.values():
+            for region in self.world.regions:
                 if region.current_player == player.player_id and region.health > 0:
                     result += f"  {region}"
 
@@ -520,13 +485,13 @@ class State:
     def next_region(self):
         current_regions = [
             region
-            for region in self.world.regions.values()
+            for region in self.world.regions
             if region.last_modified < self.time
             and region.current_player == self.current_player
             and region.health > 0
         ]
 
-        return current_regions[0].name if len(current_regions) > 0 else ""
+        return current_regions[0].id if len(current_regions) > 0 else ""
 
     def goal_message(self):
         alive_players = [player for player in self.players if player.regions_owned > 0]
@@ -556,8 +521,8 @@ class State:
         for disaster in current_disaster_types:
             region_id = random.choice(
                 [
-                    name
-                    for (name, region) in self.world.regions.items()
+                    region.id
+                    for region in self.world.regions
                     if region.current_player != -1
                 ]
             )
@@ -568,7 +533,10 @@ class State:
                 # TODO add compounding
             )
 
-            new_disaster_buffer.append(Devastation(region_id, disaster, damage))
+            new_disaster_buffer.append(
+                Devastation(region_id, region.name, disaster, damage)
+            )
+
         return new_disaster_buffer
 
     def move_time_forward(self):
@@ -578,19 +546,19 @@ class State:
         self.time += 1
 
         self.current_disasters.clear()
+        self.compound_buffer.clear()
 
         for devastation in self.disaster_buffer:
             if random.random() > math.pow(
                 DISASTER_CHANCE_FACTOR, self.global_badness
             ):  # Uniform[0,1] > [0,1]^[5,inf) # Initially 0.95^5 = 0.77, 23% chance of disaster
                 # at this point we've decided to cast this devastation so we perform compounding
-                region = self.world.regions[devastation.region]
-                print("This is a region: ", region)
+                region = self.world.regions[devastation.region_id]
 
                 if region not in self.compound_buffer:
-                    self.compound_buffer[region] = []
-                self.compound_buffer[region] = []
-                self.compound_buffer[region].append(devastation)
+                    self.compound_buffer[region.id] = []
+                self.compound_buffer[region.id] = []
+                self.compound_buffer[region.id].append(devastation)
 
         combined = {}
         for region, disasters in self.compound_buffer.items():
@@ -601,18 +569,14 @@ class State:
             else:
                 combined[region] = disasters
 
-        for region, disasters in self.compound_buffer.items():
+        for region_id, disasters in self.compound_buffer.items():
+            region = self.world.regions[region_id]
             # This is all after we've combined
 
             region_owner = self.players[region.current_player]
 
-            devastation_list = []
             for disaster in disasters:
-                curr_dev = Devastation(region, disaster, disaster.damage)
-                devastation_list.append(curr_dev)
-                self.current_disasters.append(curr_dev)
-
-            for disaster in devastation_list:
+                self.current_disasters.append(disaster)
                 if region.health > 0:
                     region.health -= disaster.damage
 
@@ -652,8 +616,7 @@ class State:
         if len(self.current_disasters) > 0:
             msg += "\nThe following disasters have occurred:"
             for devastation in self.current_disasters:
-                region = self.world.regions[devastation.region.name]
-                # region = self.world.regions[devastation.region.name] TODO: idk why the above line works
+                region = self.world.regions[devastation.region_id]
                 msg += f"\n {devastation}"
                 if region.health <= 0:
                     msg += f"\n{devastation.region} has been destroyed!"
@@ -789,7 +752,7 @@ class SendForeignAidOperator(PlayerAction):
     def update_state(self, state: State):
         region = state.world.regions[state.current_region]
         player = state.players[region.current_player]
-        for region in state.world.regions.values():
+        for region in state.world.regions:
             if region.current_player != state.current_player:
                 region.health = min(region.health + 1, MAX_REGION_HEALTH)
                 # player = state.players[region.current_player]

@@ -8,22 +8,29 @@
 // match the expected interface, even if the JSON is valid.
 
 export interface State {
+    options:           Options;
     world:             World;
     stat_disasters:    any[];
     time:              number;
     current_player:    number;
     global_badness:    number;
+    player_count:      number;
     players:           Player[];
     current_disasters: any[];
     cataclysm_history: Array<any[]>;
     disaster_buffer:   DisasterBuffer[];
-    current_region:    string;
+    compound_buffer:   CompoundBuffer;
+    current_region:    number;
+}
+
+export interface CompoundBuffer {
 }
 
 export interface DisasterBuffer {
-    region:   string;
-    disaster: Disaster;
-    damage:   number;
+    region_id: number;
+    region:    string;
+    disaster:  Disaster;
+    damage:    number;
 }
 
 export interface Disaster {
@@ -42,6 +49,10 @@ export enum PyType {
     MainRegionType = "__main__.RegionType",
 }
 
+export interface Options {
+    players: number;
+}
+
 export interface Player {
     player_id:     number;
     money:         number;
@@ -49,20 +60,16 @@ export interface Player {
 }
 
 export interface World {
-    regions:      { [key: string]: Region };
-    map:          string[];
+    regions:      Region[];
     region_count: number;
-    width:        number;
-    height:       number;
 }
 
 export interface Region {
+    id:             number;
     name:           string;
     current_player: number;
     region_type:    Disaster;
     health:         number;
-    x:              number;
-    y:              number;
     last_modified:  number;
 }
 
@@ -232,18 +239,24 @@ function r(name: string) {
 
 const typeMap: any = {
     "State": o([
+        { json: "options", js: "options", typ: r("Options") },
         { json: "world", js: "world", typ: r("World") },
         { json: "stat_disasters", js: "stat_disasters", typ: a("any") },
         { json: "time", js: "time", typ: 0 },
         { json: "current_player", js: "current_player", typ: 0 },
         { json: "global_badness", js: "global_badness", typ: 0 },
+        { json: "player_count", js: "player_count", typ: 0 },
         { json: "players", js: "players", typ: a(r("Player")) },
         { json: "current_disasters", js: "current_disasters", typ: a("any") },
         { json: "cataclysm_history", js: "cataclysm_history", typ: a(a("any")) },
         { json: "disaster_buffer", js: "disaster_buffer", typ: a(r("DisasterBuffer")) },
-        { json: "current_region", js: "current_region", typ: "" },
+        { json: "compound_buffer", js: "compound_buffer", typ: r("CompoundBuffer") },
+        { json: "current_region", js: "current_region", typ: 0 },
+    ], false),
+    "CompoundBuffer": o([
     ], false),
     "DisasterBuffer": o([
+        { json: "region_id", js: "region_id", typ: 0 },
         { json: "region", js: "region", typ: "" },
         { json: "disaster", js: "disaster", typ: r("Disaster") },
         { json: "damage", js: "damage", typ: 0 },
@@ -257,25 +270,24 @@ const typeMap: any = {
     "Objclass": o([
         { json: "py/type", js: "py/type", typ: r("PyType") },
     ], false),
+    "Options": o([
+        { json: "players", js: "players", typ: 0 },
+    ], false),
     "Player": o([
         { json: "player_id", js: "player_id", typ: 0 },
         { json: "money", js: "money", typ: 0 },
         { json: "regions_owned", js: "regions_owned", typ: 0 },
     ], false),
     "World": o([
-        { json: "regions", js: "regions", typ: m(r("Region")) },
-        { json: "map", js: "map", typ: a("") },
+        { json: "regions", js: "regions", typ: a(r("Region")) },
         { json: "region_count", js: "region_count", typ: 0 },
-        { json: "width", js: "width", typ: 0 },
-        { json: "height", js: "height", typ: 0 },
     ], false),
     "Region": o([
+        { json: "id", js: "id", typ: 0 },
         { json: "name", js: "name", typ: "" },
         { json: "current_player", js: "current_player", typ: 0 },
         { json: "region_type", js: "region_type", typ: r("Disaster") },
         { json: "health", js: "health", typ: 0 },
-        { json: "x", js: "x", typ: 0 },
-        { json: "y", js: "y", typ: 0 },
         { json: "last_modified", js: "last_modified", typ: 0 },
     ], false),
     "PyType": [
