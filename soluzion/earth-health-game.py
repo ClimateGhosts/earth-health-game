@@ -519,7 +519,7 @@ class State:
                 [
                     region.id
                     for region in self.world.regions
-                    if region.current_player != -1
+                    if (region.current_player != -1) and (region.health > 0)
                 ]
             )
             region = self.world.regions[region_id]
