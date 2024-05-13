@@ -246,6 +246,7 @@ END_OF_UNIVERSE = 5
 random.seed(SEED)
 
 region_names: list[str] = json.load(open("names.json"))
+adjacency: dict[str, list[int]] = json.load(open("adjacency.json"))
 
 
 @dataclass
@@ -367,15 +368,10 @@ class WorldState:
 
     def get_adjacent_regions(self, region: RegionState):
         """
-        Get the regions adjacent to the given region in a 9x9 grid.
-
-        ACTUALLY. I prefer applying a mask of weights to the world, multiplied by disaster damage.
+        Get the regions from the adjacency data
         """
-        adjacent_regions = []
 
-        # TODO adjacency that makes sense for the visual map
-
-        return adjacent_regions
+        return [self.regions[r] for r in adjacency[str(region.id)]]
 
     def apply_damage(self, devastation: Devastation):
         """
@@ -793,7 +789,7 @@ OPERATORS = [
 # region TRANSITIONS
 
 TRANSITIONS = [
-    (lambda s1, s2, op: s1.time != s2.time, lambda s1, s2, op: s2.transition_msg(s1))
+    (lambda s1, s2, op: s1.time != s2.time, lambda s1, s2, op: s2.transition_msg(s1)),
 ]
 
 # endregion TRANSITIONS
