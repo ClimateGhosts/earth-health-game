@@ -684,7 +684,7 @@ class RegionAction(PlayerAction):
 
     def get_name(self, state: State):
         return self.name + (
-            f" ({"+" if self.net_money > 0 else ""}{self.net_money}M$)"
+            f" ({'+' if self.net_money > 0 else ''}{self.net_money}M$)"
             if self.net_money != 0
             else ""
         )
