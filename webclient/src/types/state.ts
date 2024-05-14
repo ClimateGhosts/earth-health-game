@@ -20,7 +20,6 @@ export interface State {
     cataclysm_history: Array<any[]>;
     disaster_buffer:   DisasterBuffer[];
     compound_buffer:   CompoundBuffer;
-    current_region:    number;
 }
 
 export interface CompoundBuffer {
@@ -54,9 +53,10 @@ export interface Options {
 }
 
 export interface Player {
-    player_id:     number;
-    money:         number;
-    regions_owned: number;
+    player_id:       number;
+    money:           number;
+    regions_owned:   number;
+    current_actions: CompoundBuffer;
 }
 
 export interface World {
@@ -70,7 +70,6 @@ export interface Region {
     current_player: number;
     region_type:    Disaster;
     health:         number;
-    last_modified:  number;
 }
 
 // Converts JSON strings to/from your types
@@ -251,7 +250,6 @@ const typeMap: any = {
         { json: "cataclysm_history", js: "cataclysm_history", typ: a(a("any")) },
         { json: "disaster_buffer", js: "disaster_buffer", typ: a(r("DisasterBuffer")) },
         { json: "compound_buffer", js: "compound_buffer", typ: r("CompoundBuffer") },
-        { json: "current_region", js: "current_region", typ: 0 },
     ], false),
     "CompoundBuffer": o([
     ], false),
@@ -277,6 +275,7 @@ const typeMap: any = {
         { json: "player_id", js: "player_id", typ: 0 },
         { json: "money", js: "money", typ: 0 },
         { json: "regions_owned", js: "regions_owned", typ: 0 },
+        { json: "current_actions", js: "current_actions", typ: r("CompoundBuffer") },
     ], false),
     "World": o([
         { json: "regions", js: "regions", typ: a(r("Region")) },
@@ -288,7 +287,6 @@ const typeMap: any = {
         { json: "current_player", js: "current_player", typ: 0 },
         { json: "region_type", js: "region_type", typ: r("Disaster") },
         { json: "health", js: "health", typ: 0 },
-        { json: "last_modified", js: "last_modified", typ: 0 },
     ], false),
     "PyType": [
         "__main__.DisasterType",

@@ -2,7 +2,7 @@ import json
 import math
 import random
 from copy import deepcopy
-from typing import List
+from typing import List, Optional
 
 import jsonpickle
 
@@ -116,7 +116,7 @@ class RegionType(Enum):
 
 playable_regions = list(RegionType)[1:]
 
-# TODO data about disaster compounding, explotation potential (mesa gives more gold than plains), curves of damage and health.
+# TODO data about compounding, explotation potential (mesa gives more gold than plains), curves of damage and health.
 
 # Convention: the higher the number, the worse the disaster impact.
 disaster_matrix: dict[DisasterType, dict[RegionType, int]] = {
@@ -237,7 +237,7 @@ TOTAL_REGIONS = 20
 MAX_REGION_HEALTH = 10
 INITIAL_REGION_HEALTH = 5
 """Players"""
-MAX_PLAYERS = 4
+MAX_PLAYERS = 5
 STARTING_MONEY = 100
 
 START_OF_UNIVERSE = -1
@@ -260,7 +260,6 @@ class RegionState:
     current_player: int
     region_type: RegionType
     health: int
-    last_modified: int = START_OF_UNIVERSE
 
     def __str__(self):
         return f"{self.name} ({self.region_type}, {self.health}❤️)"
@@ -294,6 +293,7 @@ class PlayerState:
         self.player_id = player_id
         self.money = STARTING_MONEY
         self.regions_owned = regions_owned
+        self.current_actions: dict[int, int] = {}
 
     def __str__(self):
         return f"Player {self.player_id} with ${self.money}M and {self.regions_owned} region(s)"
@@ -427,7 +427,6 @@ class State:
 
         self.generate_disaster_buffer()
         self.disaster_buffer = self.generate_disaster_buffer()
-        self.current_region = self.next_region()
 
     def serialize(self):
         return jsonpickle.encode(self, indent=2, unpicklable=False)
@@ -464,9 +463,13 @@ class State:
                 for devastation in self.disaster_buffer:
                     result += f"\n {devastation}"
             else:
-                result += (
-                    f"You are deciding for {self.world.regions[self.current_region]}.\n"
-                )
+                result += "You are deciding for:"
+                for region in self.world.regions:
+                    if (
+                        region.current_player == self.current_player
+                        and region.id not in player.current_actions
+                    ):
+                        result += f"\n[{region.id}] {region}"
 
         return result
 
@@ -477,17 +480,6 @@ class State:
         return self.time >= END_OF_UNIVERSE or all(
             player.regions_owned <= 0 for player in self.players
         )
-
-    def next_region(self):
-        current_regions = [
-            region
-            for region in self.world.regions
-            if region.last_modified < self.time
-            and region.current_player == self.current_player
-            and region.health > 0
-        ]
-
-        return current_regions[0].id if len(current_regions) > 0 else ""
 
     def goal_message(self):
         alive_players = [player for player in self.players if player.regions_owned > 0]
@@ -633,62 +625,89 @@ class PlayerAction(Basic_Operator):
     Base operator for a particular action that a player can take on their turn
     """
 
-    def __init__(self, name):
-        super().__init__(name)
+    def __init__(self, name, params=None):
+        super().__init__(name, transf=self.transf, params=params or [])
 
     def is_applicable(self, state: State, role=None):
         return role is None or state.current_player == role
 
-    def update_state(self, state: State):
+    def update_state(self, state: State, args: dict[str, any] = None):
         """
         Effects this operator has on the state
         :param state:
+        :param args:
         :return:
         """
         pass
 
-    def apply(self, old_state: State):
+    def transf(self, old_state: State, params: Optional[list[any]] = None):
         """
         Real operator apply function
+        :param params:
         :param old_state: current game state
         :return: new game state
         """
         state: State = old_state.clone()
 
-        self.update_state(state)
+        args = {}
+        if params:
+            for i, param in enumerate(self.params):
+                args[param["name"]] = params[i]
 
-        if state.current_region != "":
-            state.world.regions[state.current_region].last_modified = state.time
-
-        # Progress turns
-
-        if state.next_region() == "":
-            state.current_player += 1
-            if state.current_player >= state.player_count:
-                state.move_time_forward()
-                state.current_player = 0
-
-        state.current_region = state.next_region()
+        self.update_state(state, args)
 
         return state
 
 
-class UpOperator(PlayerAction):
+class RegionAction(PlayerAction):
+    """
+    Operator for an action the performs effects on a specific region
+    """
 
-    MONEY_GAINED = 10  # TODO tune this (ex: less health = less money)
+    op_no: int
+    """Corresponds to the index this will be put in the OPERATORS array"""
 
-    def __init__(self):
-        super().__init__("Exploit for wealth at the cost of health")
+    net_money: int
+
+    def __init__(self, name):
+        super().__init__(
+            name,
+            params=[{"name": "Region", "type": "int", "min": 0, "max": TOTAL_REGIONS}],
+        )
 
     def is_applicable(self, state: State, role=None):
         return (
             super().is_applicable(state, role)
             and state.players[state.current_player].regions_owned > 0
+            and state.players[state.current_player].money >= -self.net_money
         )
 
-    def update_state(self, state: State):
-        region = state.world.regions[state.current_region]
+    def get_name(self, state: State):
+        return self.name + (
+            f" ({"+" if self.net_money > 0 else ""}{self.net_money}M$)"
+            if self.net_money != 0
+            else ""
+        )
 
+    def update_state(self, state: State, args: dict[str, any] = None):
+        region = state.world.regions[args["Region"]]
+        self.update_region(state, region)
+        state.players[state.current_player].money += self.net_money
+        player = state.players[state.current_player]
+        player.current_actions[region.id] = self.op_no
+
+    def update_region(self, state: State, region: RegionState):
+        pass
+
+
+class UpOperator(RegionAction):
+    op_no = 0
+    net_money = +10
+
+    def __init__(self):
+        super().__init__("Exploit for wealth at the cost of health")
+
+    def update_region(self, state: State, region: RegionState):
         region.health -= 1
         # TODO may need a death handler here - DONE
         if region.health <= 0:
@@ -697,65 +716,34 @@ class UpOperator(PlayerAction):
                 region_owner.regions_owned -= 1
 
         state.global_badness += 1
-        state.players[state.current_player].money += self.MONEY_GAINED
 
 
-class DownOperator(PlayerAction):
-
-    MONEY_REQUIRED = 20  # TODO tune this to depend on health
+class DownOperator(RegionAction):
+    op_no = 1
+    net_money = -20
 
     def __init__(self):
         super().__init__("Heal and don't steal")
 
-    def is_applicable(self, state: State, role=None):
-        return (
-            super().is_applicable(state, role)
-            and state.players[state.current_player].regions_owned > 0
-            and state.players[state.current_player].money >= self.MONEY_REQUIRED
-        )
-
-    def update_state(self, state: State):
-        region = state.world.regions[state.current_region]
+    def update_region(self, state: State, region: RegionState):
         region.health = min(region.health + 1, MAX_REGION_HEALTH)
-        player = state.players[region.current_player]
-        player.money -= self.MONEY_REQUIRED
 
 
-class NoneOperator(PlayerAction):
-    def __init__(self):
-        super().__init__("Take no action for your faction")
+class SendForeignAidOperator(RegionAction):
+    op_no = 2
 
-    def update_state(self, state: State):
-        pass
-        # region = state.world.regions[state.current_region]
-        # player = state.players[region.current_player]
-
-
-class SendForeignAidOperator(PlayerAction):
-
-    MONEY_REQUIRED = 30  # Fixing the world is expensive, especially far away.
+    net_money = -30  # Fixing the world is expensive, especially far away.
 
     def __init__(self):
         super().__init__("Send Foreign Aid")
 
-    def is_applicable(self, state: State, role=None):
-        return (
-            super().is_applicable(state, role)
-            and state.players[state.current_player].regions_owned > 0
-            and state.players[state.current_player].money >= self.MONEY_REQUIRED
-        )
-
-    def update_state(self, state: State):
-        region = state.world.regions[state.current_region]
-        player = state.players[region.current_player]
-        for region in state.world.regions:
-            if region.current_player != state.current_player:
-                region.health = min(region.health + 1, MAX_REGION_HEALTH)
-                # player = state.players[region.current_player]
-        player.money -= self.MONEY_REQUIRED
+    def update_region(self, state: State, region: RegionState):
+        region.health = min(region.health + 1, MAX_REGION_HEALTH)
 
 
 class ClimateGhostOperator(PlayerAction):
+    op_no = 3
+
     def __init__(self):
         super().__init__("Reshuffle the upcoming kerfuffle")
 
@@ -765,7 +753,7 @@ class ClimateGhostOperator(PlayerAction):
             and state.players[state.current_player].regions_owned <= 0
         )
 
-    def update_state(self, state: State):
+    def update_state(self, state: State, args: Optional[dict[str, any]] = None):
         state.disaster_buffer = state.generate_disaster_buffer()
 
         # TODO this should be a transition, but could overlap with turn end
@@ -775,12 +763,27 @@ class ClimateGhostOperator(PlayerAction):
             print(f" {devastation}")
 
 
+class EndTurnOperator(PlayerAction):
+    op_no = 4
+
+    def __init__(self):
+        super().__init__("End Turn")
+
+    def update_state(self, state: State, args: Optional[dict[str, any]] = None):
+        player = state.players[state.current_player]
+        player.current_actions.clear()
+        state.current_player += 1
+        if state.current_player >= state.player_count:
+            state.move_time_forward()
+            state.current_player = 0
+
+
 OPERATORS = [
     UpOperator(),
     DownOperator(),
-    NoneOperator(),
     SendForeignAidOperator(),
     ClimateGhostOperator(),
+    EndTurnOperator(),
 ]
 
 # endregion OPERATORS

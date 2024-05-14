@@ -9,10 +9,10 @@ Requires Python 3.9 or higher
 To install the project requirements, do
 
 ```shell
-pip install -r requirements
+pip install -r requirements.txt
 ```
 
-## Running the Game
+## Running the Game Locally
 
 ### Server
 
@@ -26,9 +26,9 @@ More info about our Soluzion server package can be found [here](https://github.c
 
 ### Client
 
-Use https://climateghosts.github.io/earth-health-game to connect to the server and play
+Use the live client at https://climateghosts.github.io/earth-health-game and set the server url to http://localhost:5000
 
-### Development
+## Development
 
 ### SOLUZION Problem / Server
 

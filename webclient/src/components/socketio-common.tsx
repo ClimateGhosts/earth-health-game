@@ -30,11 +30,13 @@ type SocketContext = {
   isConnected: boolean | null;
   currentRoom?: Room;
   roleInfo?: Role[];
+  myRoles: number[];
 };
 
 export const SocketContext = createContext<SocketContext>({
   serverUrl: process.env.NEXT_PUBLIC_DEFAULT_SERVER_URL as string,
   isConnected: false,
+  myRoles: [],
 });
 
 const createSocket = (url: string) => {
@@ -299,7 +301,8 @@ export const SocketIOCommon = ({
                         size={"sm"}
                         className="w-50 mt-3 mx-auto"
                         variant="success"
-                        onClick={() =>
+                        onClick={() => {
+                          socket.emit("set_roles", { roles: [...roles] });
                           socket.emit(
                             "start_game",
                             {
@@ -316,8 +319,8 @@ export const SocketIOCommon = ({
                                 setErrorText(error.message || "");
                               }
                             },
-                          )
-                        }
+                          );
+                        }}
                       >
                         Start Game
                       </Button>
@@ -376,7 +379,14 @@ export const SocketIOCommon = ({
         </Container>
       )}
       <SocketContext.Provider
-        value={{ socket, serverUrl, isConnected, roleInfo, currentRoom }}
+        value={{
+          socket,
+          serverUrl,
+          isConnected,
+          roleInfo,
+          currentRoom,
+          myRoles: [...roles],
+        }}
       >
         {children}
       </SocketContext.Provider>

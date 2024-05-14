@@ -1,12 +1,12 @@
 import { DisasterType, RegionType } from "../types/earth-health-game";
 
-enum Color {
+export enum Color {
   RED = "#C0392B", // A deep red
   GREEN = "#27AE60", // A rich green
   YELLOW = "#F1C40F", // A muted gold
   BLUE = "#2980B9", // A strong blue
   MAGENTA = "#8E44AD", // A muted magenta
-  CYAN = "#16A085", // A sea green
+  CYAN = "#17C4C4", // A sea green
   WHITE = "#ECF0F1", // A soft white
   ORANGE = "#E67E22", // A deep orange
   PURPLE = "#9B59B6", // A subdued purple
@@ -57,3 +57,11 @@ export const ansiToHtml = (text: string) => {
   // Handle unclosed span tags if the input text does not reset color at the end
   return `<div>${text}</div>`;
 };
+
+export const playerColors = [
+  Color.RED,
+  Color.GREEN,
+  Color.MAGENTA,
+  Color.ORANGE,
+  Color.CYAN,
+];
