@@ -6,18 +6,9 @@ import { GameContext } from "../game";
 import cx from "classnames";
 
 export default ({ className }: { className?: string }) => {
-  const { socket, myRoles, roleInfo, isConnected, serverUrl, currentRoom } =
-    useContext(SocketContext);
-  const {
-    state,
-    namesByRole,
-    currentRegion,
-    selectedRegion,
-    currentPlayer,
-    myTurn,
-    operators,
-    nameForPlayer,
-  } = useContext(GameContext);
+  const { socket } = useContext(SocketContext);
+  const { state, currentPlayer, operators, nameForPlayer } =
+    useContext(GameContext);
 
   return (
     <Card className={cx("shadow-lg w-auto p-3", className)}>
@@ -37,7 +28,7 @@ export default ({ className }: { className?: string }) => {
                   : "success"
               }
               onClick={() =>
-                socket!.emit("operator_chosen", {
+                socket.emit("operator_chosen", {
                   op_no: Operators.END_TURN,
                   params: null,
                 })

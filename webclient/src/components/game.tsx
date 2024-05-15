@@ -6,7 +6,7 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { Player, Region, State } from "../types/state";
+import { DisasterBuffer, Player, Region, State } from "../types/state";
 import { SocketContext } from "./socketio-common";
 import { Operator } from "../types/soluzion-types-extra";
 import { useList } from "react-use";
@@ -17,6 +17,7 @@ import VisualOptionsPanel, { ColorMode } from "./panels/visual-options-panel";
 import TransitionsModel from "./panels/transitions-model";
 import GameMap from "./map/game-map";
 import { logForOperator } from "../lib/logging";
+import GameLogPanel from "./panels/game-log-panel";
 
 type GameContext = {
   state: State;
@@ -34,6 +35,9 @@ type GameContext = {
   };
 };
 
+export const displayTime = (time: number) => 2050 + time * 10;
+export const displayMoney = (money: number) => `$${money}M`;
+
 export const GameContext = createContext<GameContext>(
   undefined as unknown as GameContext,
 );
@@ -46,7 +50,16 @@ export default () => {
   const [gameOver, setGameOver] = useState(false);
   const [selectedRegion, setSelectedRegion] = useState(-1);
   const [transitions, transitionList] = useList([] as string[]);
-  const [gameLogs, gameLog] = useList([] as string[]);
+  const [gameLogs, gameLog] = useList(
+    [] as { time: number; message: string }[],
+  );
+  const [lastOperator, setLastOperator] = useState<
+    | (ServerToClientEvents["operator_applied"]["operator"] & {
+        player: number;
+        time: number;
+      })
+    | undefined
+  >(undefined);
 
   const [colorMode, setColorMode] = useState(ColorMode.ByOwner);
 
@@ -78,7 +91,7 @@ export default () => {
     socket.on("game_started", (event) => {
       if (!event.state) return;
       setState(JSON.parse(event.state));
-      gameLogs.push("The game has started!");
+      gameLogs.push({ time: 0, message: "The game has started!" });
     });
 
     socket.on("operators_available", (event) => {
@@ -88,11 +101,40 @@ export default () => {
     socket.on("operator_applied", (event) => {
       if (!event.state) return;
 
-      gameLogs.push(
-        logForOperator(event, nameForPlayer(state!.current_player), state!),
-      );
+      setState((prevState) => {
+        setLastOperator({
+          ...event.operator,
+          player: prevState?.current_player ?? 0,
+          time: prevState?.time ?? 0,
+        });
 
-      setState(JSON.parse(event.state));
+        const newState = JSON.parse(event.state!) as State;
+
+        if (prevState?.time !== newState.time) {
+          const newLogs = [] as { time: number; message: string }[];
+          for (let disaster of newState.current_disasters as DisasterBuffer[]) {
+            newLogs.push({
+              time: newState.time,
+              message: `${disaster.disaster._value_} in ${disaster.region} (${disaster.damage} damage)`,
+            });
+          }
+          for (let region of newState.world.regions) {
+            if (
+              (region.health <= 0 &&
+                prevState?.world.regions[region.id].health) ??
+              0 > 0
+            ) {
+              newLogs.push({
+                time: newState.time,
+                message: `${region.name} was destroyed!`,
+              });
+            }
+          }
+          gameLog.push(...newLogs);
+        }
+
+        return newState;
+      });
     });
 
     socket.on("transition", ({ message }) => {
@@ -104,6 +146,19 @@ export default () => {
       setGameOver(true);
     });
   }, [socket]);
+
+  useEffect(() => {
+    if (lastOperator) {
+      gameLog.push({
+        time: lastOperator.time,
+        message: logForOperator(
+          lastOperator,
+          nameForPlayer(lastOperator.player),
+          state!,
+        ),
+      });
+    }
+  }, [lastOperator]);
 
   return (
     <div className={"h-auto user-select-none"}>
@@ -126,11 +181,8 @@ export default () => {
           }}
         >
           <div className={"overflow-hidden position-relative d-flex"}>
-            <div id={"map"}>
-              <GameMap />
-            </div>
+            <GameMap />
             <div
-              id={"ui"}
               className={"position-absolute w-100 h-100 pointer-events-none"}
             >
               <StateInfoPanel
@@ -143,16 +195,17 @@ export default () => {
                 className={"position-absolute bottom-0 end-0 m-4"}
               />
               <VisualOptionsPanel
-                className={"position-absolute bottom-0 start-0 m-4 "}
+                className={"position-absolute bottom-0 start-0 m-4"}
+              />
+              <GameLogPanel
+                className={"position-absolute bottom-0 absolute-centered-x m-4"}
+                gameLogs={gameLogs}
               />
               <TransitionsModel
                 text={transitions.length > 0 ? transitions[0] : undefined}
                 title={gameOver ? "Game Over!" : "Transition"}
                 onHide={() => {
                   transitionList.removeAt(0);
-                  if (gameOver) {
-                    window.location.reload();
-                  }
                 }}
               />
             </div>

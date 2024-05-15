@@ -36,7 +36,7 @@ export default ({ className }: { className?: string }) => {
                   currentRegion!.name,
                 );
                 if (newName && newName !== currentRegion!.name) {
-                  socket!.emit("operator_chosen", {
+                  socket.emit("operator_chosen", {
                     op_no: Operators.RENAME_REGION,
                     params: [currentRegion!.id, newName],
                   });
@@ -48,10 +48,9 @@ export default ({ className }: { className?: string }) => {
           )}
         </h2>
         <Row className={"fs-5 g-2 row-cols-2"}>
-          <Col>
-            {currentRegion.health > 0 &&
-              `Owned by ${nameForPlayer(currentRegion.current_player)}`}
-          </Col>
+          {currentRegion.health > 0 && (
+            <Col>Owned by {nameForPlayer(currentRegion.current_player)}</Col>
+          )}
           <Col>
             Region Type: {currentRegion.region_type._value_}
             {RegionEmoji[currentRegion.region_type._value_]}
@@ -88,7 +87,7 @@ export default ({ className }: { className?: string }) => {
                   <Col xs={"auto"}>
                     <Button
                       onClick={() =>
-                        socket!.emit("operator_chosen", {
+                        socket.emit("operator_chosen", {
                           op_no: operator.op_no,
                           params: [selectedRegion],
                         })

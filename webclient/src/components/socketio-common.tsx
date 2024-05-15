@@ -25,7 +25,7 @@ import { GameOptions } from "../types/earth-health-game";
 import _ from "lodash";
 
 type SocketContext = {
-  socket?: SoluzionSocket;
+  socket: SoluzionSocket;
   serverUrl: string;
   isConnected: boolean | null;
   currentRoom?: Room;
@@ -34,6 +34,7 @@ type SocketContext = {
 };
 
 export const SocketContext = createContext<SocketContext>({
+  socket: undefined as any,
   serverUrl: process.env.NEXT_PUBLIC_DEFAULT_SERVER_URL as string,
   isConnected: false,
   myRoles: [],
