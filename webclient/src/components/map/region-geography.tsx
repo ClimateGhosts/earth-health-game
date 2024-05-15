@@ -35,7 +35,8 @@ export default ({ geo }: { geo: any }) => {
   const has_actions =
     myTurn &&
     region.current_player === state!.current_player &&
-    !(region.id in currentPlayer!.current_actions);
+    !(region.id in currentPlayer!.current_actions) &&
+    region.health > 0;
 
   return (
     <Geography

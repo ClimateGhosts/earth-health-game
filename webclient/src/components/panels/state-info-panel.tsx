@@ -4,8 +4,10 @@ import React, { useContext } from "react";
 import { displayMoney, displayTime, GameContext } from "../game";
 import cx from "classnames";
 import { RegionEmoji } from "../../types/earth-health-game";
+import { SocketContext } from "../socketio-common";
 
 export default ({ className }: { className?: string }) => {
+  const { myRoles } = useContext(SocketContext);
   const { state, nameForPlayer } = useContext(GameContext);
 
   return (
@@ -21,6 +23,22 @@ export default ({ className }: { className?: string }) => {
         <Col>Time: {displayTime(state.time)}</Col>
         <Col>Climate Badness {state.global_badness}</Col>
       </Row>
+      {state.players.some(
+        (player) =>
+          myRoles.includes(player.player_id) && player.regions_owned <= 0,
+      ) && (
+        <>
+          <h3 className={"text-center my-3"}>Next Possible Disasters</h3>
+          <Row className={"row-cols-1 g-3"}>
+            {state.disaster_buffer.map((disaster, i) => (
+              <Col key={i}>
+                {disaster.disaster._value_} in {disaster.region} (
+                {disaster.damage} damage)
+              </Col>
+            ))}
+          </Row>
+        </>
+      )}
       <h3 className={"text-center my-3"}>Player Info</h3>
       <Row className={"row-cols-1 g-3"}>
         {state.players.map((player, i) => (

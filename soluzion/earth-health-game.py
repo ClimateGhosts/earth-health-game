@@ -705,10 +705,10 @@ class UpOperator(RegionAction):
     net_money = +10
 
     def __init__(self):
-        super().__init__("Exploit for wealth at the cost of health")
+        super().__init__("Exploit for wealth at the cost of health (-5❤️)")
 
     def update_region(self, state: State, region: RegionState):
-        region.health -= 1
+        region.health -= 5
         # TODO may need a death handler here - DONE
         if region.health <= 0:
             region_owner = state.players[region.current_player]
@@ -723,7 +723,7 @@ class DownOperator(RegionAction):
     net_money = -20
 
     def __init__(self):
-        super().__init__("Heal and don't steal")
+        super().__init__("Heal and don't steal (+1❤️)")
 
     def update_region(self, state: State, region: RegionState):
         region.health = min(region.health + 1, MAX_REGION_HEALTH)
@@ -735,7 +735,7 @@ class SendForeignAidOperator(RegionAction):
     net_money = -30  # Fixing the world is expensive, especially far away.
 
     def __init__(self):
-        super().__init__("Send Foreign Aid")
+        super().__init__("Send Foreign Aid (+1❤️)")
 
     def update_region(self, state: State, region: RegionState):
         region.health = min(region.health + 1, MAX_REGION_HEALTH)
