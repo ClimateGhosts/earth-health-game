@@ -705,10 +705,10 @@ class UpOperator(RegionAction):
     net_money = +10
 
     def __init__(self):
-        super().__init__("Exploit for wealth at the cost of health (-5❤️)")
+        super().__init__("Exploit for wealth at the cost of health (-1❤️)")
 
     def update_region(self, state: State, region: RegionState):
-        region.health -= 5
+        region.health -= 1
         # TODO may need a death handler here - DONE
         if region.health <= 0:
             region_owner = state.players[region.current_player]

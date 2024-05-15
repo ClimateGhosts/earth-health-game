@@ -2,6 +2,10 @@
 
 ## Collaborative Climate Contest
 
+## How to run the game
+
+The live version of the game can be played from our GitHub Pages Site https://climateghosts.github.io/earth-health-game
+
 ## Requirements
 
 Requires Python 3.9 or higher
