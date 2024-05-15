@@ -49,7 +49,8 @@ export const SocketIOCommon = ({
   children,
   title,
 }: PropsWithChildren<{ title: string }>) => {
-  const [serverUrl, setServerUrl] = useState(
+  const [serverUrl, setServerUrl] = useSessionStorage(
+    "serverUrl",
     process.env.NEXT_PUBLIC_DEFAULT_SERVER_URL as string,
   );
   const [socket, setSocket] = useState(() =>

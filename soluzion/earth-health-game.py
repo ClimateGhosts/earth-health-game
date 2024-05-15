@@ -778,12 +778,36 @@ class EndTurnOperator(PlayerAction):
             state.current_player = 0
 
 
+class RenameRegionOperator(PlayerAction):
+    op_no = 5
+
+    def __init__(self):
+        super().__init__(
+            "Rename Region",
+            params=[
+                {"name": "Region", "type": "int", "min": 0, "max": TOTAL_REGIONS},
+                {"name": "Name", "type": "str"},
+            ],
+        )
+
+    def is_applicable(self, state: State, role=None):
+        return (
+            super().is_applicable(state, role)
+            and state.players[state.current_player].regions_owned > 0
+        )
+
+    def update_state(self, state: State, args: dict[str, any] = None):
+        region = state.world.regions[args["Region"]]
+        region.name = args["Name"]
+
+
 OPERATORS = [
     UpOperator(),
     DownOperator(),
     SendForeignAidOperator(),
     ClimateGhostOperator(),
     EndTurnOperator(),
+    RenameRegionOperator(),
 ]
 
 # endregion OPERATORS

@@ -26,10 +26,11 @@ import { interpolateHsl, interpolateRgb } from "d3-interpolate";
 import _ from "lodash";
 import { Operators, RegionEmoji, RegionType } from "../types/earth-health-game";
 import { use100vh } from "react-div-100vh";
+import { PencilFill } from "react-bootstrap-icons";
 
 enum ColorMode {
-  ByRegionType = "By Region Type",
   ByOwner = "By Owner",
+  ByRegionType = "By Region Type",
   ByHealth = "By Health",
 }
 
@@ -288,10 +289,33 @@ export default () => {
             {currentRegion && (
               <Card
                 className={
-                  "position-absolute shadow-lg w-25 mt-4 me-4 p-3 end-0"
+                  "position-absolute shadow-lg w-25 mt-4 me-4 p-3 end-0 pointer-events-auto"
                 }
               >
-                <h2 className={"text-center"}>{currentRegion.name}</h2>
+                <h2 className={"text-center"}>
+                  {currentRegion.name}
+                  {myRoles.includes(currentRegion.current_player) && (
+                    <Button
+                      size={"sm"}
+                      variant={"outline-primary"}
+                      className={"border-0"}
+                      onClick={() => {
+                        const newName = prompt(
+                          "Choose a new name for this region",
+                          currentRegion!.name,
+                        );
+                        if (newName && newName !== currentRegion!.name) {
+                          socket!.emit("operator_chosen", {
+                            op_no: Operators.RENAME_REGION,
+                            params: [currentRegion!.id, newName],
+                          });
+                        }
+                      }}
+                    >
+                      <PencilFill />
+                    </Button>
+                  )}
+                </h2>
                 <Row className={"fs-5 g-2 row-cols-2"}>
                   <Col>
                     {currentRegion.health > 0 &&
@@ -309,11 +333,7 @@ export default () => {
                   </Col>
                 </Row>
                 <h3 className={"text-center"}>Actions</h3>
-                <Row
-                  className={
-                    "row-cols-1 g-2 justify-content-center pointer-events-auto"
-                  }
-                >
+                <Row className={"row-cols-1 g-2 justify-content-center"}>
                   {!myTurn && <Col>Not your turn.</Col>}
                   {currentRegion.id in currentPlayer!.current_actions ? (
                     <Col>Already taken action this turn.</Col>
