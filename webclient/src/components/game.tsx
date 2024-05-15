@@ -95,7 +95,7 @@ export default () => {
     return state!.world.regions[id];
   };
   const nameForPlayer = (playerId: number) =>
-    `Player ${playerId} (${namesByRole[playerId]})`;
+    `${roleInfo?.[playerId]?.name} (${namesByRole[playerId]})`;
 
   const [transitionText, setTransitionText] = useState("");
 
