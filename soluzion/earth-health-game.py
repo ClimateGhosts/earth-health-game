@@ -113,6 +113,17 @@ class RegionType(Enum):
         else:
             return Color.RESET
 
+    def color_by_player(self, num_players):
+        colors = [
+            Color.RED,
+            Color.GREEN,
+            Color.BLUE,
+            Color.YELLOW,
+            Color.CYAN,
+            Color.ORANGE,
+            Color.PURPLE,
+        ]
+        return colors[num_players]
 
 playable_regions = list(RegionType)[1:]
 
