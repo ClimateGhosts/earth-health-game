@@ -25,16 +25,19 @@ import { GameOptions } from "../types/earth-health-game";
 import _ from "lodash";
 
 type SocketContext = {
-  socket?: SoluzionSocket;
+  socket: SoluzionSocket;
   serverUrl: string;
   isConnected: boolean | null;
   currentRoom?: Room;
   roleInfo?: Role[];
+  myRoles: number[];
 };
 
 export const SocketContext = createContext<SocketContext>({
+  socket: undefined as any,
   serverUrl: process.env.NEXT_PUBLIC_DEFAULT_SERVER_URL as string,
   isConnected: false,
+  myRoles: [],
 });
 
 const createSocket = (url: string) => {
@@ -47,7 +50,8 @@ export const SocketIOCommon = ({
   children,
   title,
 }: PropsWithChildren<{ title: string }>) => {
-  const [serverUrl, setServerUrl] = useState(
+  const [serverUrl, setServerUrl] = useSessionStorage(
+    "serverUrl",
     process.env.NEXT_PUBLIC_DEFAULT_SERVER_URL as string,
   );
   const [socket, setSocket] = useState(() =>
@@ -220,7 +224,7 @@ export const SocketIOCommon = ({
                       "text-center p-3 d-flex flex-column h-100 shadow-sm justify-content-between"
                     }
                   >
-                    <h5>{room.room}</h5>
+                    <h5>#{room.room}</h5>
                     {room.players.map((player) => (
                       <div
                         key={player.name}
@@ -299,7 +303,8 @@ export const SocketIOCommon = ({
                         size={"sm"}
                         className="w-50 mt-3 mx-auto"
                         variant="success"
-                        onClick={() =>
+                        onClick={() => {
+                          socket.emit("set_roles", { roles: [...roles] });
                           socket.emit(
                             "start_game",
                             {
@@ -316,8 +321,8 @@ export const SocketIOCommon = ({
                                 setErrorText(error.message || "");
                               }
                             },
-                          )
-                        }
+                          );
+                        }}
                       >
                         Start Game
                       </Button>
@@ -376,7 +381,14 @@ export const SocketIOCommon = ({
         </Container>
       )}
       <SocketContext.Provider
-        value={{ socket, serverUrl, isConnected, roleInfo, currentRoom }}
+        value={{
+          socket,
+          serverUrl,
+          isConnected,
+          roleInfo,
+          currentRoom,
+          myRoles: [...roles],
+        }}
       >
         {children}
       </SocketContext.Provider>

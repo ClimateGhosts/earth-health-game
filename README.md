@@ -2,6 +2,10 @@
 
 ## Collaborative Climate Contest
 
+## How to run the game
+
+The live version of the game can be played from our GitHub Pages Site https://climateghosts.github.io/earth-health-game
+
 ## Requirements
 
 Requires Python 3.9 or higher
@@ -9,10 +13,10 @@ Requires Python 3.9 or higher
 To install the project requirements, do
 
 ```shell
-pip install -r requirements
+pip install -r requirements.txt
 ```
 
-## Running the Game
+## Running the Game Locally
 
 ### Server
 
@@ -26,15 +30,17 @@ More info about our Soluzion server package can be found [here](https://github.c
 
 ### Client
 
-Use https://climateghosts.github.io/earth-health-game to connect to the server and play
+Use the live client at https://climateghosts.github.io/earth-health-game and set the server url to http://localhost:5000
 
-### Development
+## Development
 
 ### SOLUZION Problem / Server
 
 Make edits to `soluzion/earth-health-game.py`
 
 ### Client
+
+This is for within the `/webclient` directory
 
 Install [node package manager (npm)](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
 
