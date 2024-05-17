@@ -9,7 +9,7 @@ import React, {
 import { Player, Region, State } from "../types/state";
 import { SocketContext } from "./socketio-common";
 import { Operator } from "../types/soluzion-types-extra";
-import { useList } from "react-use";
+import { useList, usePrevious } from "react-use";
 import SelectedRegionPanel from "./panels/selected-region-panel";
 import EndTurnPanel from "./panels/end-turn-panel";
 import StateInfoPanel from "./panels/state-info-panel";
@@ -18,6 +18,7 @@ import TransitionsModel from "./panels/transitions-model";
 import GameMap from "./map/game-map";
 import { Log, logMessageForOperator, logsForTransitions } from "../lib/logging";
 import GameLogPanel from "./panels/game-log-panel";
+import useSound from "use-sound";
 
 type GameContext = {
   state: State;
@@ -83,12 +84,29 @@ export default () => {
   const nameForPlayer = (playerId: number) =>
     `${roleInfo?.[playerId]?.name} (${namesByRole[playerId]})`;
 
+  const [playMyTurnSound] = useSound(
+    (process.env.NEXT_PUBLIC_BASE_PATH || "") +
+      "/audio/EarthHealthTurnStart.mp3",
+  );
+
+  const previousState = usePrevious(state);
+
+  useEffect(() => {
+    if (
+      state &&
+      previousState?.current_player !== state.current_player &&
+      myRoles.includes(state.current_player)
+    ) {
+      playMyTurnSound();
+    }
+  }, [state, myRoles]);
+
   useEffect(() => {
     if (!socket) return;
 
     socket.on("game_started", (event) => {
       if (!event.state) return;
-      setState(JSON.parse(event.state));
+      setState(JSON.parse(event.state) as State);
       gameLogs.push({ time: 0, message: "The game has started!" });
     });
 

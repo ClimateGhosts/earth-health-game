@@ -5,6 +5,7 @@ import React, { useContext } from "react";
 import { GameContext } from "../game";
 import { SocketContext } from "../socketio-common";
 import cx from "classnames";
+import useSound from "use-sound";
 
 export default ({ className }: { className?: string }) => {
   const { socket, myRoles } = useContext(SocketContext);
@@ -17,6 +18,14 @@ export default ({ className }: { className?: string }) => {
     operators,
     nameForPlayer,
   } = useContext(GameContext);
+
+  const [playExploit] = useSound(
+    (process.env.NEXT_PUBLIC_BASE_PATH || "") + "/audio/EarthHealthExploit.mp3",
+  );
+
+  const [playHeal] = useSound(
+    (process.env.NEXT_PUBLIC_BASE_PATH || "") + "/audio/EarthHealthHeal.mp3",
+  );
 
   return (
     currentRegion && (
@@ -84,12 +93,21 @@ export default ({ className }: { className?: string }) => {
                 .map((operator) => (
                   <Col xs={"auto"}>
                     <Button
-                      onClick={() =>
+                      onClick={() => {
                         socket.emit("operator_chosen", {
                           op_no: operator.op_no,
                           params: [selectedRegion],
-                        })
-                      }
+                        });
+
+                        switch (operator.op_no) {
+                          case Operators.UP:
+                            playHeal();
+                            break;
+                          case Operators.DOWN:
+                            playExploit();
+                            break;
+                        }
+                      }}
                     >
                       {operator.name}
                     </Button>
