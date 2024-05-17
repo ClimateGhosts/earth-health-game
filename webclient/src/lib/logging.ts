@@ -1,7 +1,9 @@
 import { Operators } from "../types/earth-health-game";
-import { State } from "../types/state";
+import { DisasterBuffer, State } from "../types/state";
 
-export const logForOperator = (
+export type Log = { time: number; message: string };
+
+export const logMessageForOperator = (
   operator: ServerToClientEvents["operator_applied"]["operator"],
   player: string,
   state: State,
@@ -40,4 +42,36 @@ export const logForOperator = (
   }
 
   return message;
+};
+
+export const logsForTransitions = (
+  prevState: State | undefined,
+  newState: State,
+) => {
+  const newLogs = [] as Log[];
+
+  if (!prevState || prevState.time === newState.time) {
+    return newLogs;
+  }
+
+  for (let disaster of newState.current_disasters as DisasterBuffer[]) {
+    newLogs.push({
+      time: newState.time,
+      message: `${disaster.disaster._value_} in ${disaster.region} (${disaster.damage} damage)`,
+    });
+  }
+
+  for (let region of newState.world.regions) {
+    if (
+      region.health <= 0 &&
+      (prevState?.world.regions[region.id].health ?? 0) > 0
+    ) {
+      newLogs.push({
+        time: newState.time,
+        message: `${region.name} was destroyed!`,
+      });
+    }
+  }
+
+  return newLogs;
 };

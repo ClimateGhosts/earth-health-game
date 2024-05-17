@@ -224,7 +224,7 @@ export const SocketIOCommon = ({
                       "text-center p-3 d-flex flex-column h-100 shadow-sm justify-content-between"
                     }
                   >
-                    <h5>{room.room}</h5>
+                    <h5>#{room.room}</h5>
                     {room.players.map((player) => (
                       <div
                         key={player.name}

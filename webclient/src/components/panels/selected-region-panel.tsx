@@ -7,11 +7,9 @@ import { SocketContext } from "../socketio-common";
 import cx from "classnames";
 
 export default ({ className }: { className?: string }) => {
-  const { socket, myRoles, roleInfo, isConnected, serverUrl, currentRoom } =
-    useContext(SocketContext);
+  const { socket, myRoles } = useContext(SocketContext);
   const {
     state,
-    namesByRole,
     currentRegion,
     selectedRegion,
     currentPlayer,

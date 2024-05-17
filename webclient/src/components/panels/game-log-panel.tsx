@@ -3,13 +3,14 @@ import { Button, Card } from "react-bootstrap";
 import cx from "classnames";
 import { displayTime } from "../game";
 import { orderBy } from "lodash";
+import { Log } from "../../lib/logging";
 
 export default ({
   className,
   gameLogs,
 }: {
   className?: string;
-  gameLogs: { time: number; message: string }[];
+  gameLogs: Log[];
 }) => {
   const [showing, setShowing] = useState(false);
 

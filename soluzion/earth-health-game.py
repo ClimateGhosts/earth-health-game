@@ -12,7 +12,7 @@ from soluzion import Basic_Operator
 # region METADATA
 SOLUZION_VERSION = "4.0"
 PROBLEM_NAME = "Earth Health"
-PROBLEM_VERSION = "0.4.1"  # TODO Keep updating this value to make the server deployment always use the latest version
+PROBLEM_VERSION = "0.4.2"  # TODO Keep updating this value to make the server deployment always use the latest version
 PROBLEM_AUTHORS = ["Alicia Stepin", "Andrey Risukhin", "James Gale", "Maxim Kuznetsov"]
 PROBLEM_CREATION_DATE = "23-APRIL-2024"
 PROBLEM_DESC = """
@@ -829,6 +829,20 @@ ROLES = [
     {"name": f"{role_colors[i]} Player", "min": 1 if i <= 1 else 0, "max": 1}
     for i in range(MAX_PLAYERS)
 ]
+
+
+def VALIDATE_ROLES(roles: list[set[int]]):
+    player_roles = [role for role_list in roles for role in role_list]
+
+    if TOTAL_REGIONS // len(player_roles) != TOTAL_REGIONS / len(player_roles):
+        return f"Having {len(player_roles)} players is not currently supported"
+
+    for role_id in range(max(player_roles)):
+        if role_id not in player_roles:
+            return f"Can't have a {ROLES[max(player_roles)]['name']} without a {ROLES[role_id]['name']}"
+
+    return None
+
 
 # endregion
 

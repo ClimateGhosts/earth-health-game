@@ -6,7 +6,7 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { DisasterBuffer, Player, Region, State } from "../types/state";
+import { Player, Region, State } from "../types/state";
 import { SocketContext } from "./socketio-common";
 import { Operator } from "../types/soluzion-types-extra";
 import { useList } from "react-use";
@@ -16,7 +16,7 @@ import StateInfoPanel from "./panels/state-info-panel";
 import VisualOptionsPanel, { ColorMode } from "./panels/visual-options-panel";
 import TransitionsModel from "./panels/transitions-model";
 import GameMap from "./map/game-map";
-import { logForOperator } from "../lib/logging";
+import { Log, logMessageForOperator, logsForTransitions } from "../lib/logging";
 import GameLogPanel from "./panels/game-log-panel";
 
 type GameContext = {
@@ -50,9 +50,7 @@ export default () => {
   const [gameOver, setGameOver] = useState(false);
   const [selectedRegion, setSelectedRegion] = useState(-1);
   const [transitions, transitionList] = useList([] as string[]);
-  const [gameLogs, gameLog] = useList(
-    [] as { time: number; message: string }[],
-  );
+  const [gameLogs, gameLog] = useList([] as Log[]);
   const [lastOperator, setLastOperator] = useState<
     | (ServerToClientEvents["operator_applied"]["operator"] & {
         player: number;
@@ -110,28 +108,7 @@ export default () => {
 
         const newState = JSON.parse(event.state!) as State;
 
-        if (prevState?.time !== newState.time) {
-          const newLogs = [] as { time: number; message: string }[];
-          for (let disaster of newState.current_disasters as DisasterBuffer[]) {
-            newLogs.push({
-              time: newState.time,
-              message: `${disaster.disaster._value_} in ${disaster.region} (${disaster.damage} damage)`,
-            });
-          }
-          for (let region of newState.world.regions) {
-            if (
-              (region.health <= 0 &&
-                prevState?.world.regions[region.id].health) ??
-              0 > 0
-            ) {
-              newLogs.push({
-                time: newState.time,
-                message: `${region.name} was destroyed!`,
-              });
-            }
-          }
-          gameLog.push(...newLogs);
-        }
+        gameLog.push(...logsForTransitions(prevState, newState));
 
         return newState;
       });
@@ -151,7 +128,7 @@ export default () => {
     if (lastOperator) {
       gameLog.push({
         time: lastOperator.time,
-        message: logForOperator(
+        message: logMessageForOperator(
           lastOperator,
           nameForPlayer(lastOperator.player),
           state!,

@@ -40,6 +40,8 @@ Make edits to `soluzion/earth-health-game.py`
 
 ### Client
 
+This is for within the `/webclient` directory
+
 Install [node package manager (npm)](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
 
 Install dependencies
