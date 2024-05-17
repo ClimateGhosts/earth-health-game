@@ -1,14 +1,33 @@
 from enum import Enum
-from typing import Any, TypeVar, Type, cast
+from typing import Optional, Any, TypeVar, Type, cast
 
 
 T = TypeVar("T")
 EnumT = TypeVar("EnumT", bound=Enum)
 
 
+def from_none(x: Any) -> Any:
+    assert x is None
+    return x
+
+
 def from_float(x: Any) -> float:
     assert isinstance(x, (float, int)) and not isinstance(x, bool)
     return float(x)
+
+
+def from_union(fs, x):
+    for f in fs:
+        try:
+            return f(x)
+        except:
+            pass
+    assert False
+
+
+def from_bool(x: Any) -> bool:
+    assert isinstance(x, bool)
+    return x
 
 
 def to_float(x: Any) -> float:
@@ -42,20 +61,24 @@ class DisasterType(Enum):
 
 
 class GameOptions:
-    players: float
+    players: Optional[float]
+    region_shuffling: Optional[bool]
 
-    def __init__(self, players: float) -> None:
+    def __init__(self, players: Optional[float], region_shuffling: Optional[bool]) -> None:
         self.players = players
+        self.region_shuffling = region_shuffling
 
     @staticmethod
     def from_dict(obj: Any) -> 'GameOptions':
         assert isinstance(obj, dict)
-        players = from_float(obj.get("players"))
-        return GameOptions(players)
+        players = from_union([from_none, from_float], obj.get("players"))
+        region_shuffling = from_union([from_none, from_bool], obj.get("region_shuffling"))
+        return GameOptions(players, region_shuffling)
 
     def to_dict(self) -> dict:
         result: dict = {}
-        result["players"] = to_float(self.players)
+        result["players"] = from_union([from_none, to_float], self.players)
+        result["region_shuffling"] = from_union([from_none, from_bool], self.region_shuffling)
         return result
 
 
@@ -81,3 +104,11 @@ def game_options_from_dict(s: Any) -> GameOptions:
 
 def game_options_to_dict(x: GameOptions) -> Any:
     return to_class(GameOptions, x)
+
+
+def operators_from_dict(s: Any) -> float:
+    return from_float(s)
+
+
+def operators_to_dict(x: float) -> Any:
+    return to_float(x)

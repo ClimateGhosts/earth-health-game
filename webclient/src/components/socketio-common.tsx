@@ -11,6 +11,7 @@ import {
   Container,
   Dropdown,
   DropdownItem,
+  DropdownItemText,
   DropdownMenu,
   DropdownToggle,
   Form,
@@ -19,7 +20,13 @@ import {
 } from "react-bootstrap";
 import { io } from "socket.io-client";
 import { SoluzionSocket } from "../types/socketio";
-import { useDebounce, useList, useSessionStorage, useSet } from "react-use";
+import {
+  useDebounce,
+  useList,
+  useMap,
+  useSessionStorage,
+  useSet,
+} from "react-use";
 import Indicator from "./indicator";
 import { GameOptions } from "../types/earth-health-game";
 import _ from "lodash";
@@ -46,6 +53,19 @@ const createSocket = (url: string) => {
   return socket;
 };
 
+const getOptionValue = (option: GameOption, value: any) => {
+  switch (option.type) {
+    case "str":
+      return String(value);
+    case "bool":
+      return Boolean(value);
+    case "int":
+      return typeof value === "string" ? parseInt(value) : Number(value);
+    case "float":
+      return typeof value === "string" ? parseFloat(value) : Number(value);
+  }
+};
+
 export const SocketIOCommon = ({
   children,
   title,
@@ -65,6 +85,10 @@ export const SocketIOCommon = ({
   const [roles, roleSet] = useSet(new Set<number>([]));
   const [gameStarted, setGameStarted] = useState(false);
   const [sid, setSid] = useState("");
+  const [options, setOptions] = useState([] as GameOption[]);
+  const [currentOptions, optionMap] = useMap(
+    {} as Record<string, string | number | boolean>,
+  );
 
   const randomRoomId = () =>
     Math.round(new Date().getMilliseconds()).toString();
@@ -98,6 +122,14 @@ export const SocketIOCommon = ({
       });
       socket.emit("info", {}, (info) => {
         console.log(info);
+      });
+      socket.emit("list_options", {}, ({ options }) => {
+        setOptions(options);
+        optionMap.setAll(
+          Object.fromEntries(
+            options.map((option) => [option.name, option.default]),
+          ),
+        );
       });
     });
 
@@ -299,33 +331,109 @@ export const SocketIOCommon = ({
                       </Button>
                     )}
                     {owner && currentRoom && (
-                      <Button
-                        size={"sm"}
-                        className="w-50 mt-3 mx-auto"
-                        variant="success"
-                        onClick={() => {
-                          socket.emit("set_roles", { roles: [...roles] });
-                          socket.emit(
-                            "start_game",
-                            {
-                              args: {
-                                players: _.chain(room.players)
-                                  .flatMap((player) => player.roles)
-                                  .uniq()
-                                  .value().length,
-                              } satisfies GameOptions,
-                            },
-                            ({ error } = {}) => {
-                              if (error) {
-                                setErrorTitle(error.type);
-                                setErrorText(error.message || "");
-                              }
-                            },
-                          );
-                        }}
-                      >
-                        Start Game
-                      </Button>
+                      <>
+                        <Button
+                          size={"sm"}
+                          className="w-50 mt-3 mx-auto"
+                          variant="success"
+                          onClick={() => {
+                            console.log(currentOptions);
+                            socket.emit("set_roles", { roles: [...roles] });
+                            socket.emit(
+                              "start_game",
+                              {
+                                args: {
+                                  ...currentOptions,
+                                  players: _.chain(room.players)
+                                    .flatMap((player) => player.roles)
+                                    .uniq()
+                                    .value().length,
+                                },
+                              },
+                              ({ error } = {}) => {
+                                if (error) {
+                                  setErrorTitle(error.type);
+                                  setErrorText(error.message || "");
+                                }
+                              },
+                            );
+                          }}
+                        >
+                          Start Game
+                        </Button>
+                        {options?.length && (
+                          <Dropdown className={"mt-3"} autoClose={"outside"}>
+                            <DropdownToggle
+                              size={"sm"}
+                              variant={"outline-primary"}
+                              className={"border-0 text-body"}
+                            >
+                              Options
+                            </DropdownToggle>
+                            <DropdownMenu>
+                              {options
+                                .filter((option) => !!option.description)
+                                .map((option, i) => (
+                                  <DropdownItemText key={i}>
+                                    <Row className={"row-cols-2"}>
+                                      <Col xs={"auto"} className={"me-auto"}>
+                                        {option.name}
+                                      </Col>
+                                      <Col xs={"auto"}>
+                                        {option.type === "bool" ? (
+                                          <Button
+                                            size={"sm"}
+                                            variant={
+                                              optionMap.get(option.name) == true
+                                                ? "success"
+                                                : "danger"
+                                            }
+                                            onClick={() =>
+                                              optionMap.set(
+                                                option.name,
+                                                !optionMap.get(option.name),
+                                              )
+                                            }
+                                          >
+                                            {optionMap.get(option.name) == true
+                                              ? "True"
+                                              : "False"}
+                                          </Button>
+                                        ) : (
+                                          <Form.Control
+                                            value={String(
+                                              optionMap.get(option.name),
+                                            )}
+                                            type={
+                                              option.type === "str"
+                                                ? "text"
+                                                : "number"
+                                            }
+                                            onChange={(e) =>
+                                              optionMap.set(
+                                                option.name,
+                                                getOptionValue(
+                                                  option,
+                                                  e.target.value,
+                                                ),
+                                              )
+                                            }
+                                          />
+                                        )}
+                                      </Col>
+                                      <Col
+                                        xs={"auto"}
+                                        className={"text-black-50"}
+                                      >
+                                        {option.description}
+                                      </Col>
+                                    </Row>
+                                  </DropdownItemText>
+                                ))}
+                            </DropdownMenu>
+                          </Dropdown>
+                        )}
+                      </>
                     )}
                     {room.players.length === 0 && (
                       <Button

@@ -402,7 +402,9 @@ class State:
 
     def __init__(self, args: dict[str, any] = None):
         self.options = (
-            GameOptions.from_dict(args) if args is not None else GameOptions(4)
+            GameOptions.from_dict(args)
+            if args is not None
+            else GameOptions(MAX_PLAYERS, False)
         )
 
         self.world = WorldState()
@@ -412,7 +414,7 @@ class State:
         self.time = 0
         self.current_player = 0
         self.global_badness = STARTING_BADNESS
-        self.player_count = int(self.options.players)
+        self.player_count = int(self.options.players or MAX_PLAYERS)
         self.players = [
             PlayerState(player_id, TOTAL_REGIONS // self.player_count)
             for player_id in range(self.player_count)
@@ -589,8 +591,9 @@ class State:
 
         self.disaster_buffer = self.generate_disaster_buffer()
 
-        if self.time % 2 == 0:
-            self.region_shuffle()
+        if self.options.region_shuffling:
+            if self.time % 2 == 0:
+                self.region_shuffle()
 
     def region_shuffle(self):
         """
@@ -854,6 +857,26 @@ def VALIDATE_ROLES(roles: list[set[int]]):
 
     return None
 
+
+# endregion
+
+# region OPTIONS
+
+OPTIONS = [
+    {
+        "name": "players",
+        "type": "int",
+        "default": MAX_PLAYERS,
+        "min": 2,
+        "max": MAX_PLAYERS,
+    },
+    {
+        "name": "region_shuffling",
+        "type": "bool",
+        "default": False,
+        "description": "Whether or not to periodically shuffle the regions",
+    },
+]
 
 # endregion
 
