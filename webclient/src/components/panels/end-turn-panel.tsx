@@ -19,7 +19,7 @@ export default ({ className }: { className?: string }) => {
       <h3 className={"text-center pointer-events-auto"}>
         {operators.length > 0 ? (
           <>
-            <div>It is your turn</div>
+            <div>It is your turn.</div>
             {climateGhost && (
               <Button
                 className={"mt-3 w-100"}
@@ -56,7 +56,7 @@ export default ({ className }: { className?: string }) => {
             </Button>
           </>
         ) : (
-          `${nameForPlayer(state!.current_player)} is acting`
+          `${nameForPlayer(state!.current_player)} is acting.`
         )}
       </h3>
     </Card>

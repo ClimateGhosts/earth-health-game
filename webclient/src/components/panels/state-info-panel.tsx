@@ -21,7 +21,7 @@ export default ({ className }: { className?: string }) => {
       <h3 className={"text-center"}>State Info</h3>
       <Row className={"row-cols-1 g-2"}>
         <Col>Time: {displayTime(state.time)}</Col>
-        <Col>Climate Badness {state.global_badness}</Col>
+        <Col>Climate Badness: {state.global_badness}</Col>
       </Row>
       {state.players.some(
         (player) =>

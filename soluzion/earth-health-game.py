@@ -617,7 +617,7 @@ class State:
 
         old_state: State = s
 
-        msg = f"Time has progressed from {old_state.time} to {self.time}.\n"
+        msg = f"Time has progressed from {old_state.time * 10 + 2050} to {self.time * 10 + 2050}.\n"
 
         if len(self.current_disasters) > 0:
             msg += "\nThe following disasters have occurred:"
@@ -852,11 +852,11 @@ def VALIDATE_ROLES(roles: list[set[int]]):
     player_roles = [role for role_list in roles for role in role_list]
 
     if TOTAL_REGIONS // len(player_roles) != TOTAL_REGIONS / len(player_roles):
-        return f"Having {len(player_roles)} players is not currently supported"
+        return f"Having {len(player_roles)} players is not currently supported."
 
     for role_id in range(max(player_roles)):
         if role_id not in player_roles:
-            return f"Can't have a {ROLES[max(player_roles)]['name']} without a {ROLES[role_id]['name']}"
+            return f"Can't have a {ROLES[max(player_roles)]['name']} without a {ROLES[role_id]['name']}."
 
     return None
 
@@ -874,10 +874,10 @@ OPTIONS = [
         "max": MAX_PLAYERS,
     },
     {
-        "name": "region_shuffling",
+        "name": "Region Shuffling",
         "type": "bool",
         "default": False,
-        "description": "Whether or not to periodically shuffle the regions",
+        "description": "(whether or not to periodically shuffle the regions)",
     },
 ]
 

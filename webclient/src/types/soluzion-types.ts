@@ -242,7 +242,7 @@ type ServerError =
   | "GameAlreadyStarted"
   | "GameNotStarted"
   | "InvalidOperator"
-  | "InvalidRoles"
+  | "Invalid Roles"
   | "ResponseTimeout";
 
 type Role = {

@@ -19,25 +19,25 @@ export const logMessageForOperator = (
 
       switch (operator.op_no) {
         case Operators.UP:
-          message += `exploited ${region.name}`;
+          message += `exploited ${region.name}.`;
           break;
         case Operators.DOWN:
-          message += `healed ${region.name}`;
+          message += `healed ${region.name}.`;
           break;
         case Operators.FOREIGN_AID:
-          message += `sent foreign aid to ${region.name}`;
+          message += `sent foreign aid to ${region.name}.`;
           break;
         case Operators.RENAME_REGION:
-          message += `renamed ${region.name} to ${operator.params![1]}`;
+          message += `renamed ${region.name} to ${operator.params![1]}.`;
           break;
       }
 
       break;
     case Operators.CLIMATE_GHOST:
-      message += "has tipped the scales from beyond the grave";
+      message += "has tipped the scales from beyond the grave.";
       break;
     case Operators.END_TURN:
-      message += "ended their turn";
+      message += "ended their turn.";
       break;
   }
 

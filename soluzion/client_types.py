@@ -72,13 +72,13 @@ class GameOptions:
     def from_dict(obj: Any) -> 'GameOptions':
         assert isinstance(obj, dict)
         players = from_union([from_none, from_float], obj.get("players"))
-        region_shuffling = from_union([from_none, from_bool], obj.get("region_shuffling"))
+        region_shuffling = from_union([from_none, from_bool], obj.get("Region Shuffling"))
         return GameOptions(players, region_shuffling)
 
     def to_dict(self) -> dict:
         result: dict = {}
         result["players"] = from_union([from_none, to_float], self.players)
-        result["region_shuffling"] = from_union([from_none, from_bool], self.region_shuffling)
+        result["Region Shuffling"] = from_union([from_none, from_bool], self.region_shuffling)
         return result
 
 
