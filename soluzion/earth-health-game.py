@@ -350,7 +350,10 @@ class WorldState:
         # global_disasters: float
 
     def __str__(self):
-        return "TODO textual world state that aligns with visualization"
+        ret_str = ""
+        for region in self.regions:
+            ret_str += region.__str__() + "\n"
+        return ret_str
 
     def reassign_governors(self, players: List[PlayerState]):
         """
@@ -724,7 +727,6 @@ class UpOperator(RegionAction):
 
     def update_region(self, state: State, region: RegionState):
         region.health -= 1
-        # TODO may need a death handler here - DONE
         if region.health <= 0:
             region_owner = state.players[region.current_player]
             if region_owner.regions_owned != 0:
