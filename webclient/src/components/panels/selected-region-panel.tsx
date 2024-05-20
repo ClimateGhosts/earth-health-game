@@ -56,7 +56,7 @@ export default ({ className }: { className?: string }) => {
         </h2>
         <Row className={"fs-5 g-2 row-cols-2"}>
           {currentRegion.health > 0 && (
-            <Col>Owned by {nameForPlayer(currentRegion.current_player)}</Col>
+            <Col>Owned by: {nameForPlayer(currentRegion.current_player)}</Col>
           )}
           <Col>
             Region Type: {currentRegion.region_type._value_}
@@ -84,7 +84,7 @@ export default ({ className }: { className?: string }) => {
                       );
                     case Operators.FOREIGN_AID:
                       return (
-                        currentRegion.current_player !== state.current_player
+                        currentRegion.health > 0 && currentRegion.current_player !== state.current_player
                       );
                     default:
                       return false;

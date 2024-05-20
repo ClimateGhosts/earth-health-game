@@ -550,6 +550,12 @@ class State:
         """
         self.time += 1
 
+        for player in self.players:
+            if player.money < 10:
+                player.money = 0
+            else:
+                player.money -= 10
+
         self.current_disasters.clear()
         self.compound_buffer.clear()
 
@@ -755,7 +761,9 @@ class SendForeignAidOperator(RegionAction):
         super().__init__("Send Foreign Aid (+1❤️)")
 
     def update_region(self, state: State, region: RegionState):
-        region.health = min(region.health + 1, MAX_REGION_HEALTH)
+        if region.health > 0:
+            region.health = min(region.health + 1, MAX_REGION_HEALTH)
+        pass
 
 
 class ClimateGhostOperator(PlayerAction):
