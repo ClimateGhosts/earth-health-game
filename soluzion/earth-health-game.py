@@ -314,9 +314,6 @@ class PlayerState:
         return self.__dict__ == other.__dict__
 
 
-# TODO send help option
-
-
 class WorldState:
     """
     Class within state storing the relative positions of regions, accessing them.

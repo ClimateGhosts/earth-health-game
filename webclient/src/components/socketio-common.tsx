@@ -352,7 +352,7 @@ export const SocketIOCommon = ({
                               },
                               ({ error } = {}) => {
                                 if (error) {
-                                  setErrorTitle(error.type);
+                                  setErrorTitle(_.startCase(error.type));
                                   setErrorText(error.message || "");
                                 }
                               },

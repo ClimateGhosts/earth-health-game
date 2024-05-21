@@ -43,7 +43,14 @@ export default () => {
       }}
       onClick={() => setSelectedRegion(-1)}
     >
-      <ZoomableGroup center={[0, 0]} zoom={4} minZoom={3}>
+      <ZoomableGroup
+        zoom={4}
+        minZoom={3}
+        translateExtent={[
+          [600, 300],
+          [1300, 700],
+        ]}
+      >
         <Geographies
           geography={
             (process.env.NEXT_PUBLIC_BASE_PATH || "") + "/map.geo.json"

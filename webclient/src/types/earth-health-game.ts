@@ -23,7 +23,7 @@ export enum DisasterType {
 
 export type GameOptions = {
   players: number | null;
-  region_shuffling: boolean | null;
+  "Region Shuffling": boolean | null;
 };
 
 export enum Operators {
