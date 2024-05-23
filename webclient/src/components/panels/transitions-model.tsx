@@ -1,20 +1,19 @@
 import { Modal } from "react-bootstrap";
-import { ansiToHtml } from "../../lib/colors";
-import React from "react";
+import React, { ReactNode } from "react";
 
 export default ({
-  text,
+  body,
   title,
   onHide,
 }: {
-  text?: string;
-  title: string;
+  body?: ReactNode;
+  title: ReactNode;
   onHide: () => void;
 }) => {
   return (
     <Modal
       size={"lg"}
-      show={!!text}
+      show={!!body}
       onHide={onHide}
       backdrop={"static"}
       className={"user-select-none"}
@@ -23,13 +22,7 @@ export default ({
         <Modal.Title>{title}</Modal.Title>
       </Modal.Header>
 
-      <Modal.Body>
-        <p
-          dangerouslySetInnerHTML={{
-            __html: ansiToHtml(text || ""),
-          }}
-        />
-      </Modal.Body>
+      <Modal.Body>{body}</Modal.Body>
     </Modal>
   );
 };

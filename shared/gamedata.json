@@ -6,10 +6,10 @@
       "playable": false,
       "emoji": "\uD83C\uDF0A",
       "disaster_matrix": {
-        "earthquake": 0,
-        "fire": 0,
-        "flood": 0,
-        "windstorm": 0
+        "Earthquake": 0,
+        "Fire": 0,
+        "Flood": 0,
+        "Windstorm": 0
       }
     },
     {
@@ -18,10 +18,10 @@
       "playable": true,
       "emoji": "⛰\uFE0F",
       "disaster_matrix": {
-        "earthquake": 1,
-        "fire": -1,
-        "flood": -2,
-        "windstorm": 2
+        "Earthquake": 1,
+        "Fire": -1,
+        "Flood": -2,
+        "Windstorm": 2
       }
     },
     {
@@ -30,10 +30,10 @@
       "playable": true,
       "emoji": "\uD83C\uDF3E",
       "disaster_matrix": {
-        "earthquake": 2,
-        "fire": 1,
-        "flood": 2,
-        "windstorm": -1
+        "Earthquake": -2,
+        "Fire": 1,
+        "Flood": 2,
+        "Windstorm": -1
       }
     },
     {
@@ -42,10 +42,10 @@
       "playable": true,
       "emoji": "\uD83C\uDF32",
       "disaster_matrix": {
-        "earthquake": -1,
-        "fire": 2,
-        "flood": 1,
-        "windstorm": -2
+        "Earthquake": -1,
+        "Fire": 2,
+        "Flood": 1,
+        "Windstorm": -2
       }
     },
     {
@@ -54,10 +54,10 @@
       "playable": true,
       "emoji": "\uD83C\uDFDC\uFE0F",
       "disaster_matrix": {
-        "earthquake": 2,
-        "fire": -2,
-        "flood": -1,
-        "windstorm": 1
+        "Earthquake": 2,
+        "Fire": -2,
+        "Flood": -1,
+        "Windstorm": 1
       }
     }
   ],
@@ -68,7 +68,7 @@
       "damage": 4,
       "emoji": "\uD83E\uDEA8",
       "disaster_matrix": {
-        "fire": 1
+        "Fire": 1
       }
     },
     {
@@ -77,9 +77,9 @@
       "damage": 4,
       "emoji": "\uD83D\uDD25",
       "disaster_matrix": {
-        "flood": -1,
-        "windstorm": 2,
-        "earthquake": 1
+        "Flood": -1,
+        "Windstorm": 2,
+        "Earthquake": 1
       }
     },
     {
@@ -88,7 +88,7 @@
       "damage": 4,
       "emoji": "\uD83C\uDF0A",
       "disaster_matrix": {
-        "fire": -1
+        "Fire": -1
       }
     },
     {
@@ -97,24 +97,24 @@
       "damage": 4,
       "emoji": "\uD83C\uDF2A\uFE0F",
       "disaster_matrix": {
-        "fire": 2
+        "Fire": 2
       }
     }
   ],
   "disaster_combos": [
     {
-      "name": "Fireflood",
-      "disasters": ["fire", "flood"],
+      "name": "FireFlood",
+      "disasters": ["Fire", "Flood"],
       "effect": -1
     },
     {
       "name": "Firestorm",
-      "disasters": ["fire", "windstorm"],
+      "disasters": ["Fire", "Windstorm"],
       "effect": 2
     },
     {
       "name": "Firequake",
-      "disasters": ["fire", "earthquake"],
+      "disasters": ["Fire", "Earthquake"],
       "effect": 1
     }
   ],

@@ -5,6 +5,7 @@ import cx from "classnames";
 import { SocketContext } from "../socketio-common";
 import { playerColor } from "../../lib/colors";
 import { orderBy } from "lodash";
+import DisasterEntry from "../disaster-entry";
 
 export default ({ className }: { className?: string }) => {
   const { myRoles } = useContext(SocketContext);
@@ -12,10 +13,7 @@ export default ({ className }: { className?: string }) => {
 
   return (
     <Card
-      className={cx(
-        "shadow-lg w-25 p-3 overflow-y-auto pointer-events-auto",
-        className,
-      )}
+      className={cx("shadow-lg w-25 p-3 overflow-y-auto pointer-events-auto", className)}
       style={{ maxHeight: "80vh" }}
     >
       <h3 className={"text-center"}>State Info</h3>
@@ -24,31 +22,22 @@ export default ({ className }: { className?: string }) => {
         <Col>Climate Badness: {state.global_badness}</Col>
       </Row>
       {state.players.some(
-        (player) =>
-          myRoles.includes(player.player_id) && player.regions_owned <= 0,
+        (player) => myRoles.includes(player.player_id) && player.regions_owned <= 0,
       ) && (
         <>
           <h3 className={"text-center my-3"}>Next Possible Disasters</h3>
           <Row className={"row-cols-1 g-3"}>
-            {state.disaster_buffer.map((disaster, i) => {
-              const region = state.world.regions[disaster.region_id];
-              return (
-                <Col key={i}>
-                  {gameData.disaster[disaster.disaster].emoji}
-                  {disaster.disaster} in {gameData.biome[region.biome].emoji}
-                  {region.name}
-                </Col>
-              );
-            })}
+            {state.disaster_buffer.map((disaster, i) => (
+              <Col key={i}>
+                <DisasterEntry disaster={disaster} state={state} />
+              </Col>
+            ))}
           </Row>
         </>
       )}
       <h3 className={"text-center my-3"}>Player Info</h3>
       <Row className={"row-cols-1 g-3"}>
-        {orderBy(
-          state.players,
-          (player) => !myRoles.includes(player.player_id),
-        ).map((player) => (
+        {orderBy(state.players, (player) => !myRoles.includes(player.player_id)).map((player) => (
           <Col key={player.player_id}>
             <Row
               className={"row-cols-1 p-2 g-2 rounded-2"}

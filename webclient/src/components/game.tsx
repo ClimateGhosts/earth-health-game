@@ -1,6 +1,7 @@
 import React, {
   createContext,
   Dispatch,
+  ReactNode,
   useContext,
   useEffect,
   useMemo,
@@ -23,8 +24,9 @@ import gamedata from "../../../shared/gamedata.json";
 import { GameData } from "../types/game-data";
 import { keyBy } from "lodash";
 import MenuPanel from "./panels/menu-panel";
+import Transition from "./transition";
 
-type GameContext = {
+export type GameContext = {
   state: State;
   operators: Operator[];
   namesByRole: string[];
@@ -44,9 +46,7 @@ type GameContext = {
 export const displayTime = (time: number) => 2050 + time * 10;
 export const displayMoney = (money: number) => `$${money}M`;
 
-export const GameContext = createContext<GameContext>(
-  undefined as unknown as GameContext,
-);
+export const GameContext = createContext<GameContext>(undefined as unknown as GameContext);
 
 export const gameData = {
   ...(gamedata as GameData),
@@ -56,13 +56,14 @@ export const gameData = {
 };
 
 export default () => {
-  const { socket, currentRoom, roleInfo, myRoles } = useContext(SocketContext);
+  const socketContext = useContext(SocketContext);
+  const { socket, currentRoom, roleInfo, myRoles } = socketContext;
 
   const [state, setState] = useState<State | undefined>(undefined);
   const [operators, setOperators] = useState<Operator[]>([]);
   const [gameOver, setGameOver] = useState(false);
   const [selectedRegion, setSelectedRegion] = useState(-1);
-  const [transitions, transitionList] = useList([] as string[]);
+  const [transitions, transitionList] = useList([] as ReactNode[]);
   const [gameLogs, gameLog] = useList([] as Log[]);
   const [lastOperator, setLastOperator] = useState<
     | (ServerToClientEvents["operator_applied"]["operator"] & {
@@ -79,17 +80,14 @@ export default () => {
       currentRoom && roleInfo
         ? roleInfo.map(
             (role, i) =>
-              currentRoom.players.find((player) => player.roles.includes(i))
-                ?.name || "Unknown",
+              currentRoom.players.find((player) => player.roles.includes(i))?.name || "Unknown",
           )
         : [],
     [currentRoom, roleInfo],
   );
 
   const currentRegion =
-    selectedRegion < 0 || !state
-      ? undefined
-      : state.world.regions[selectedRegion];
+    selectedRegion < 0 || !state ? undefined : state.world.regions[selectedRegion];
   const currentPlayer = state?.players[state?.current_player];
   const myTurn = !!state && myRoles.includes(state.current_player);
 
@@ -97,8 +95,7 @@ export default () => {
     `${roleInfo?.[playerId]?.name} (${namesByRole[playerId]})`;
 
   const [playMyTurnSound] = useSound(
-    (process.env.NEXT_PUBLIC_BASE_PATH || "") +
-      "/audio/EarthHealthTurnStart.mp3",
+    (process.env.NEXT_PUBLIC_BASE_PATH || "") + "/audio/EarthHealthTurnStart.mp3",
   );
 
   const previousState = usePrevious(state);
@@ -110,6 +107,17 @@ export default () => {
       myRoles.includes(state.current_player)
     ) {
       playMyTurnSound();
+    }
+
+    if (state && previousState && state.time !== previousState.time) {
+      transitionList.push(
+        <Transition
+          prevState={previousState}
+          newState={state}
+          gameContext={gameContext}
+          socketContext={socketContext}
+        />,
+      );
     }
   }, [state, myRoles]);
 
@@ -145,7 +153,15 @@ export default () => {
     });
 
     socket.on("transition", ({ message }) => {
-      transitionList.push(message);
+      /*
+      transitionList.push(
+        <p
+          dangerouslySetInnerHTML={{
+            __html: ansiToHtml(message || ""),
+          }}
+        />,
+      );
+      */
     });
 
     socket.on("disconnect", () => {
@@ -167,11 +183,7 @@ export default () => {
     if (lastOperator) {
       gameLog.push({
         time: lastOperator.time,
-        message: logMessageForOperator(
-          lastOperator,
-          nameForPlayer(lastOperator.player),
-          state!,
-        ),
+        message: logMessageForOperator(lastOperator, nameForPlayer(lastOperator.player), state!),
       });
     }
   }, [lastOperator]);
@@ -182,53 +194,41 @@ export default () => {
     }
   }, [currentRoom]);
 
+  const gameContext = {
+    state,
+    operators,
+    namesByRole,
+    selectedRegion,
+    setSelectedRegion,
+    currentRegion,
+    currentPlayer,
+    myTurn,
+    nameForPlayer,
+    gameOver,
+    options: {
+      colorMode,
+      setColorMode,
+    },
+  } as GameContext;
+
   return (
     <div className={"h-auto user-select-none"}>
       {state && (
-        <GameContext.Provider
-          value={{
-            state,
-            operators,
-            namesByRole,
-            selectedRegion,
-            setSelectedRegion,
-            currentRegion,
-            currentPlayer,
-            myTurn,
-            nameForPlayer,
-            gameOver,
-            options: {
-              colorMode,
-              setColorMode,
-            },
-          }}
-        >
+        <GameContext.Provider value={gameContext}>
           <div className={"overflow-hidden position-relative d-flex"}>
             <GameMap />
-            <div
-              className={"position-absolute w-100 h-100 pointer-events-none"}
-            >
-              <StateInfoPanel
-                className={"position-absolute top-0 start-0 m-4"}
-              />
-              <SelectedRegionPanel
-                className={"position-absolute top-0 end-0 m-4"}
-              />
-              <EndTurnPanel
-                className={"position-absolute bottom-0 end-0 m-4"}
-              />
-              <VisualOptionsPanel
-                className={"position-absolute bottom-0 start-0 m-4"}
-              />
+            <div className={"position-absolute w-100 h-100 pointer-events-none"}>
+              <StateInfoPanel className={"position-absolute top-0 start-0 m-4"} />
+              <SelectedRegionPanel className={"position-absolute top-0 end-0 m-4"} />
+              <EndTurnPanel className={"position-absolute bottom-0 end-0 m-4"} />
+              <VisualOptionsPanel className={"position-absolute bottom-0 start-0 m-4"} />
               <GameLogPanel
                 className={"position-absolute bottom-0 absolute-centered-x m-4"}
                 gameLogs={gameLogs}
               />
-              <MenuPanel
-                className={"position-absolute top-0 absolute-centered-x m-4"}
-              />
+              <MenuPanel className={"position-absolute top-0 absolute-centered-x m-4"} />
               <TransitionsModel
-                text={transitions.length > 0 ? transitions[0] : undefined}
+                body={transitions.length > 0 ? transitions[0] : undefined}
                 title={gameOver ? "Game Over!" : "Transition"}
                 onHide={() => {
                   transitionList.removeAt(0);

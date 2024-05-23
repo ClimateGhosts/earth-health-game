@@ -13,7 +13,7 @@ from soluzion import Basic_Operator
 # region METADATA
 SOLUZION_VERSION = "4.0"
 PROBLEM_NAME = "Earth Health"
-PROBLEM_VERSION = "0.5.0"  # TODO Keep updating this value to make the server deployment always use the latest version
+PROBLEM_VERSION = "0.5.1"  # TODO Keep updating this value to make the server deployment always use the latest version
 PROBLEM_AUTHORS = ["Alicia Stepin", "Andrey Risukhin", "James Gale", "Maxim Kuznetsov"]
 PROBLEM_CREATION_DATE = "23-APRIL-2024"
 PROBLEM_DESC = """
@@ -329,13 +329,15 @@ class State:
         devastation.damage = disaster.damage
 
         # Biome vulnerability / resistance
-        devastation.damage += getattr(biome.disaster_matrix, devastation.disaster, 0)
+        devastation.damage += getattr(
+            biome.disaster_matrix, devastation.disaster.lower(), 0
+        )
 
         # Past disasters affecting vulnerability / resistance
         for time, devastations in region.devastation_history.items():
             for d in devastations:
                 devastation.damage += getattr(
-                    disasters[d.disaster].disaster_matrix, d.disaster, 0
+                    disasters[d.disaster].disaster_matrix, d.disaster.lower(), 0
                 )
 
         # Apply main damage
@@ -515,7 +517,7 @@ class RegionAction(PlayerAction):
         pass
 
 
-class UpOperator(RegionAction):
+class ExploitOperator(RegionAction):
     op_no = 0
     net_money = +10
 
@@ -523,11 +525,11 @@ class UpOperator(RegionAction):
         super().__init__("Exploit for wealth at the cost of health (-1❤️)")
 
     def update_region(self, state: State, region: RegionState):
-        state.apply_damage(region, 5)
+        state.apply_damage(region, 1)
         state.global_badness += 1
 
 
-class DownOperator(RegionAction):
+class HealOperator(RegionAction):
     op_no = 1
     net_money = -20
 
@@ -613,8 +615,8 @@ class RenameRegionOperator(PlayerAction):
 
 
 OPERATORS = [
-    UpOperator(),
-    DownOperator(),
+    ExploitOperator(),
+    HealOperator(),
     SendForeignAidOperator(),
     ClimateGhostOperator(),
     EndTurnOperator(),

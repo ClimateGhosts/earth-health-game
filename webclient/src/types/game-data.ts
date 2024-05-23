@@ -25,10 +25,10 @@ export interface Biome {
 }
 
 export interface DisasterMatrix {
-    earthquake?: number;
-    fire?:       number;
-    flood?:      number;
-    windstorm?:  number;
+    Earthquake?: number;
+    Fire?:       number;
+    Flood?:      number;
+    Windstorm?:  number;
 }
 
 export interface DisasterCombo {
@@ -226,10 +226,10 @@ const typeMap: any = {
         { json: "disaster_matrix", js: "disaster_matrix", typ: r("DisasterMatrix") },
     ], false),
     "DisasterMatrix": o([
-        { json: "earthquake", js: "earthquake", typ: u(undefined, 0) },
-        { json: "fire", js: "fire", typ: u(undefined, 0) },
-        { json: "flood", js: "flood", typ: u(undefined, 0) },
-        { json: "windstorm", js: "windstorm", typ: u(undefined, 0) },
+        { json: "Earthquake", js: "Earthquake", typ: u(undefined, 0) },
+        { json: "Fire", js: "Fire", typ: u(undefined, 0) },
+        { json: "Flood", js: "Flood", typ: u(undefined, 0) },
+        { json: "Windstorm", js: "Windstorm", typ: u(undefined, 0) },
     ], false),
     "DisasterCombo": o([
         { json: "name", js: "name", typ: "" },

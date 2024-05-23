@@ -1,9 +1,4 @@
-import React, {
-  createContext,
-  PropsWithChildren,
-  useEffect,
-  useState,
-} from "react";
+import React, { createContext, PropsWithChildren, useEffect, useState } from "react";
 import {
   Button,
   Card,
@@ -19,15 +14,9 @@ import {
   Row,
 } from "react-bootstrap";
 import { io, Socket } from "socket.io-client";
-import {
-  useDebounce,
-  useList,
-  useMap,
-  useSessionStorage,
-  useSet,
-} from "react-use";
-import Indicator from "./indicator";
+import { useDebounce, useList, useMap, useSessionStorage, useSet } from "react-use";
 import _ from "lodash";
+import { CheckLg, QuestionLg, XLg } from "react-bootstrap-icons";
 
 type SoluzionSocket = Socket<
   SocketTypes<ServerToClientEvents>,
@@ -36,7 +25,7 @@ type SoluzionSocket = Socket<
   url: string;
 };
 
-type SocketContext = {
+export type SocketContext = {
   socket: SoluzionSocket;
   serverUrl: string;
   isConnected: boolean | null;
@@ -59,23 +48,7 @@ const createSocket = (url: string) => {
   return socket;
 };
 
-const getOptionValue = (option: GameOption, value: any) => {
-  switch (option.type) {
-    case "str":
-      return String(value);
-    case "bool":
-      return Boolean(value);
-    case "int":
-      return typeof value === "string" ? parseInt(value) : Number(value);
-    case "float":
-      return typeof value === "string" ? parseFloat(value) : Number(value);
-  }
-};
-
-export const SocketIOCommon = ({
-  children,
-  title,
-}: PropsWithChildren<{ title: string }>) => {
+export const SocketIOCommon = ({ children, title }: PropsWithChildren<{ title: string }>) => {
   const [serverUrl, setServerUrl] = useSessionStorage(
     "serverUrl",
     process.env.NEXT_PUBLIC_DEFAULT_SERVER_URL as string,
@@ -92,19 +65,14 @@ export const SocketIOCommon = ({
   const [gameStarted, setGameStarted] = useState(false);
   const [sid, setSid] = useState("");
   const [options, setOptions] = useState([] as GameOption[]);
-  const [currentOptions, optionMap] = useMap(
-    {} as Record<string, string | number | boolean>,
-  );
+  const [currentOptions, optionMap] = useMap({} as Record<string, string | number | boolean>);
 
-  const randomRoomId = () =>
-    Math.round(new Date().getMilliseconds()).toString();
+  const randomRoomId = () => Math.round(new Date().getMilliseconds()).toString();
   const [roomId, setRoomId] = useState(randomRoomId());
 
   const [rooms, roomList] = useList([] as Room[]);
 
-  const currentRoom = rooms.find((room) =>
-    room.players.some((player) => player.sid === sid),
-  );
+  const currentRoom = rooms.find((room) => room.players.some((player) => player.sid === sid));
   const isInRoom = !!currentRoom;
 
   useEffect(() => {
@@ -132,9 +100,7 @@ export const SocketIOCommon = ({
       socket.emit("list_options", {}, ({ options }) => {
         setOptions(options);
         optionMap.setAll(
-          Object.fromEntries(
-            options.map((option) => [option.name, option.default]),
-          ),
+          Object.fromEntries(options.map((option) => [option.name, option.default])),
         );
       });
     });
@@ -234,12 +200,8 @@ export const SocketIOCommon = ({
                   value={serverUrl}
                   onChange={(e) => setServerUrl(e.target.value)}
                 />
-                <div
-                  className={"end-0 position-absolute absolute-centered-y me-2"}
-                >
-                  <Indicator
-                    status={socket?.url === serverUrl ? isConnected : null}
-                  />
+                <div className={"end-0 position-absolute absolute-centered-y me-2"}>
+                  <Indicator status={socket?.url === serverUrl ? isConnected : null} />
                 </div>
               </div>
             </Col>
@@ -257,9 +219,7 @@ export const SocketIOCommon = ({
           <h3 className={"text-center my-3"}>Rooms</h3>
           <Row className={"g-3 justify-content-center"}>
             {rooms.map((room) => {
-              const currentRoom = room.players.some(
-                (player) => player.sid === sid,
-              );
+              const currentRoom = room.players.some((player) => player.sid === sid);
               const owner = room.owner === sid;
               return (
                 <Col md={4} key={room.room}>
@@ -272,9 +232,7 @@ export const SocketIOCommon = ({
                     {room.players.map((player) => (
                       <div
                         key={player.name}
-                        className={
-                          "d-flex justify-content-center align-items-center my-2"
-                        }
+                        className={"d-flex justify-content-center align-items-center my-2"}
                       >
                         {player.name}
                         {player.sid === sid ? (
@@ -292,9 +250,7 @@ export const SocketIOCommon = ({
                                   key={i}
                                   className={"my-2 rounded-2"}
                                   onClick={() =>
-                                    roleSet.has(i)
-                                      ? roleSet.remove(i)
-                                      : roleSet.add(i)
+                                    roleSet.has(i) ? roleSet.remove(i) : roleSet.add(i)
                                   }
                                 >
                                   {role.name} (min {role.min}, max {role.max})
@@ -390,9 +346,7 @@ export const SocketIOCommon = ({
                                     <Row className={"row-cols-2"}>
                                       <Col
                                         xs={"auto"}
-                                        className={
-                                          "me-auto d-flex align-items-center"
-                                        }
+                                        className={"me-auto d-flex align-items-center"}
                                       >
                                         {option.name}
                                       </Col>
@@ -412,38 +366,24 @@ export const SocketIOCommon = ({
                                               )
                                             }
                                           >
-                                            {optionMap.get(option.name) == true
-                                              ? "True"
-                                              : "False"}
+                                            {optionMap.get(option.name) == true ? "True" : "False"}
                                           </Button>
                                         ) : (
                                           <Form.Control
                                             size={"sm"}
                                             className={"w-50 ms-auto"}
-                                            value={String(
-                                              optionMap.get(option.name),
-                                            )}
-                                            type={
-                                              option.type === "str"
-                                                ? "text"
-                                                : "number"
-                                            }
+                                            value={String(optionMap.get(option.name))}
+                                            type={option.type === "str" ? "text" : "number"}
                                             onChange={(e) =>
                                               optionMap.set(
                                                 option.name,
-                                                getOptionValue(
-                                                  option,
-                                                  e.target.value,
-                                                ),
+                                                getOptionValue(option, e.target.value),
                                               )
                                             }
                                           />
                                         )}
                                       </Col>
-                                      <Col
-                                        xs={"auto"}
-                                        className={"text-black-50"}
-                                      >
+                                      <Col xs={"auto"} className={"text-black-50"}>
                                         {option.description}
                                       </Col>
                                     </Row>
@@ -459,9 +399,7 @@ export const SocketIOCommon = ({
                         size={"sm"}
                         className="w-50 mt-3 mx-auto"
                         variant="danger"
-                        onClick={() =>
-                          socket.emit("delete_room", { room: room.room })
-                        }
+                        onClick={() => socket.emit("delete_room", { room: room.room })}
                       >
                         Delete
                       </Button>
@@ -472,11 +410,7 @@ export const SocketIOCommon = ({
             })}
             {!isInRoom && (
               <Col md={4} className={"text-center"}>
-                <div
-                  className={
-                    "text-center p-3 d-flex flex-column h-100 justify-content-between"
-                  }
-                >
+                <div className={"text-center p-3 d-flex flex-column h-100 justify-content-between"}>
                   <Form.Label>Room ID</Form.Label>
                   <Form.Control
                     className={"w-25 mx-auto mb-3 text-center"}
@@ -532,4 +466,26 @@ export const SocketIOCommon = ({
       </Modal>
     </>
   );
+};
+
+export const Indicator = ({ status }: { status: boolean | null | undefined }) =>
+  status === true ? (
+    <CheckLg color={"green"} />
+  ) : status === false ? (
+    <XLg color={"red"} />
+  ) : (
+    <QuestionLg color={"orange"} />
+  );
+
+const getOptionValue = (option: GameOption, value: any) => {
+  switch (option.type) {
+    case "str":
+      return String(value);
+    case "bool":
+      return Boolean(value);
+    case "int":
+      return typeof value === "string" ? parseInt(value) : Number(value);
+    case "float":
+      return typeof value === "string" ? parseFloat(value) : Number(value);
+  }
 };

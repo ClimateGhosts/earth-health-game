@@ -63,22 +63,22 @@ class DisasterMatrix:
     @staticmethod
     def from_dict(obj: Any) -> 'DisasterMatrix':
         assert isinstance(obj, dict)
-        earthquake = from_union([from_int, from_none], obj.get("earthquake"))
-        fire = from_union([from_int, from_none], obj.get("fire"))
-        flood = from_union([from_int, from_none], obj.get("flood"))
-        windstorm = from_union([from_int, from_none], obj.get("windstorm"))
+        earthquake = from_union([from_int, from_none], obj.get("Earthquake"))
+        fire = from_union([from_int, from_none], obj.get("Fire"))
+        flood = from_union([from_int, from_none], obj.get("Flood"))
+        windstorm = from_union([from_int, from_none], obj.get("Windstorm"))
         return DisasterMatrix(earthquake, fire, flood, windstorm)
 
     def to_dict(self) -> dict:
         result: dict = {}
         if self.earthquake is not None:
-            result["earthquake"] = from_union([from_int, from_none], self.earthquake)
+            result["Earthquake"] = from_union([from_int, from_none], self.earthquake)
         if self.fire is not None:
-            result["fire"] = from_union([from_int, from_none], self.fire)
+            result["Fire"] = from_union([from_int, from_none], self.fire)
         if self.flood is not None:
-            result["flood"] = from_union([from_int, from_none], self.flood)
+            result["Flood"] = from_union([from_int, from_none], self.flood)
         if self.windstorm is not None:
-            result["windstorm"] = from_union([from_int, from_none], self.windstorm)
+            result["Windstorm"] = from_union([from_int, from_none], self.windstorm)
         return result
 
 

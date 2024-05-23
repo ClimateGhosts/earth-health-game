@@ -13,6 +13,22 @@ export default ({ geo }: { geo: any }) => {
     <Marker coordinates={centroid} className={"pointer-events-none"}>
       <text
         textAnchor="middle"
+        y={-8}
+        style={{
+          fontFamily: "system-ui",
+          fontWeight: "bold",
+          fontSize: 5,
+          fill: "#000",
+        }}
+        stroke={"#FFF"}
+        strokeWidth={0.2}
+      >
+        {Object.values(region.devastation_history)
+          .flat()
+          .map((d) => gameData.disaster[d.disaster].emoji)}
+      </text>
+      <text
+        textAnchor="middle"
         y={-2}
         style={{
           fontFamily: "system-ui",
