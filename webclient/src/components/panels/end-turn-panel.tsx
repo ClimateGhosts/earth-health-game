@@ -6,8 +6,8 @@ import { GameContext } from "../game";
 import cx from "classnames";
 
 export default ({ className }: { className?: string }) => {
-  const { socket } = useContext(SocketContext);
-  const { state, currentPlayer, operators, nameForPlayer, myTurn } =
+  const { socket, leaveGame } = useContext(SocketContext);
+  const { state, currentPlayer, operators, nameForPlayer, gameOver } =
     useContext(GameContext);
 
   const climateGhost = operators.find(
@@ -17,7 +17,14 @@ export default ({ className }: { className?: string }) => {
   return (
     <Card className={cx("shadow-lg w-auto p-3", className)}>
       <h3 className={"text-center pointer-events-auto"}>
-        {operators.length > 0 ? (
+        {gameOver ? (
+          <>
+            <div>The Game Is Over!</div>
+            <Button className={"mt-3 w-100"} onClick={() => leaveGame?.()}>
+              Return Home
+            </Button>
+          </>
+        ) : operators.length > 0 ? (
           <>
             <div>It is your turn.</div>
             {climateGhost && (

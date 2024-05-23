@@ -1,9 +1,8 @@
-import { RegionEmoji } from "../../types/earth-health-game";
 import { Marker } from "react-simple-maps";
 import React, { useContext } from "react";
 import { geoCentroid } from "d3-geo";
 import { regionForGeo } from "./game-map";
-import { GameContext } from "../game";
+import { GameContext, gameData } from "../game";
 
 export default ({ geo }: { geo: any }) => {
   const { state } = useContext(GameContext);
@@ -41,7 +40,7 @@ export default ({ geo }: { geo: any }) => {
         {region.health > 0 ? (
           <>
             {region.health}❤️
-            {RegionEmoji[region.region_type._value_]}
+            {gameData.biome[region.biome].emoji}
           </>
         ) : (
           <>💀</>

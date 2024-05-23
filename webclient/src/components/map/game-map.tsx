@@ -1,13 +1,12 @@
-import { regionColors } from "../../lib/colors";
-import { RegionType } from "../../types/earth-health-game";
 import { ComposableMap, Geographies, ZoomableGroup } from "react-simple-maps";
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import { use100vh } from "react-div-100vh";
 import { GameContext } from "../game";
 import { State } from "../../types/state";
 import _ from "lodash";
 import RegionGeography from "./region-geography";
 import RegionMarker from "./region-marker";
+import { Color } from "../../lib/colors";
 
 export const regionForGeo = (geo: { rsmKey: string }, state: State) => {
   const id = parseInt(geo.rsmKey.replace("geo-", ""));
@@ -37,7 +36,7 @@ export default () => {
       height={1000}
       width={2000}
       style={{
-        background: regionColors[RegionType.OCEAN],
+        background: Color.BLUE,
         height: height,
         width: "100%",
       }}

@@ -19,6 +19,10 @@ import GameMap from "./map/game-map";
 import { Log, logMessageForOperator, logsForTransitions } from "../lib/logging";
 import GameLogPanel from "./panels/game-log-panel";
 import useSound from "use-sound";
+import gamedata from "../../../shared/gamedata.json";
+import { GameData } from "../types/game-data";
+import { keyBy } from "lodash";
+import MenuPanel from "./panels/menu-panel";
 
 type GameContext = {
   state: State;
@@ -34,6 +38,7 @@ type GameContext = {
     colorMode: ColorMode;
     setColorMode: Dispatch<ColorMode>;
   };
+  gameOver: boolean;
 };
 
 export const displayTime = (time: number) => 2050 + time * 10;
@@ -42,6 +47,13 @@ export const displayMoney = (money: number) => `$${money}M`;
 export const GameContext = createContext<GameContext>(
   undefined as unknown as GameContext,
 );
+
+export const gameData = {
+  ...(gamedata as GameData),
+  biome: keyBy(gamedata.biomes, (b) => b.name),
+  disaster: keyBy(gamedata.disasters, (d) => d.name),
+  disasterCombo: keyBy(gamedata.disaster_combos, (d) => d.name),
+};
 
 export default () => {
   const { socket, currentRoom, roleInfo, myRoles } = useContext(SocketContext);
@@ -136,9 +148,18 @@ export default () => {
       transitionList.push(message);
     });
 
-    socket.on("game_ended", ({ message }) => {
-      transitionList.push(message);
+    socket.on("disconnect", () => {
+      if (!state) return;
+      alert("You have been disconnected from the server");
+      window.location.reload();
+    });
+
+    socket.on("room_left", ({ username }) => {
+      if (!state) return;
       setGameOver(true);
+      transitionList.push(
+        `${username} has left the game! Reconnection has not yet been implemented, so unfortunately the game must end.`,
+      );
     });
   }, [socket]);
 
@@ -155,6 +176,12 @@ export default () => {
     }
   }, [lastOperator]);
 
+  useEffect(() => {
+    if (!currentRoom) {
+      setState(undefined);
+    }
+  }, [currentRoom]);
+
   return (
     <div className={"h-auto user-select-none"}>
       {state && (
@@ -169,6 +196,7 @@ export default () => {
             currentPlayer,
             myTurn,
             nameForPlayer,
+            gameOver,
             options: {
               colorMode,
               setColorMode,
@@ -195,6 +223,9 @@ export default () => {
               <GameLogPanel
                 className={"position-absolute bottom-0 absolute-centered-x m-4"}
                 gameLogs={gameLogs}
+              />
+              <MenuPanel
+                className={"position-absolute top-0 absolute-centered-x m-4"}
               />
               <TransitionsModel
                 text={transitions.length > 0 ? transitions[0] : undefined}

@@ -18,8 +18,7 @@ import {
   Modal,
   Row,
 } from "react-bootstrap";
-import { io } from "socket.io-client";
-import { SoluzionSocket } from "../types/socketio";
+import { io, Socket } from "socket.io-client";
 import {
   useDebounce,
   useList,
@@ -28,8 +27,14 @@ import {
   useSet,
 } from "react-use";
 import Indicator from "./indicator";
-import { GameOptions } from "../types/earth-health-game";
 import _ from "lodash";
+
+type SoluzionSocket = Socket<
+  SocketTypes<ServerToClientEvents>,
+  SocketTypes<ClientToServerEvents, ClientToServerResponse>
+> & {
+  url: string;
+};
 
 type SocketContext = {
   socket: SoluzionSocket;
@@ -38,6 +43,7 @@ type SocketContext = {
   currentRoom?: Room;
   roleInfo?: Role[];
   myRoles: number[];
+  leaveGame?: () => void;
 };
 
 export const SocketContext = createContext<SocketContext>({
@@ -162,7 +168,6 @@ export const SocketIOCommon = ({
     socket.on("room_deleted", ({ room }) => {
       roomList.filter((r, i, rooms) => r.room != room);
     });
-
     return () => {
       socket.disconnect();
       socket.close();
@@ -208,6 +213,12 @@ export const SocketIOCommon = ({
   const [errorTitle, setErrorTitle] = useState("");
   const [errorText, setErrorText] = useState("");
 
+  const leaveGame = () => {
+    setGameStarted(false);
+    roleSet.reset();
+    socket.emit("leave_room", {});
+  };
+
   return (
     <>
       {gameStarted || (
@@ -239,6 +250,7 @@ export const SocketIOCommon = ({
                 placeholder="Enter username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
+                maxLength={23}
               />
             </Col>
           </Row>
@@ -376,7 +388,12 @@ export const SocketIOCommon = ({
                                 .map((option, i) => (
                                   <DropdownItemText key={i}>
                                     <Row className={"row-cols-2"}>
-                                      <Col xs={"auto"} className={"me-auto"}>
+                                      <Col
+                                        xs={"auto"}
+                                        className={
+                                          "me-auto d-flex align-items-center"
+                                        }
+                                      >
                                         {option.name}
                                       </Col>
                                       <Col xs={"auto"}>
@@ -401,6 +418,8 @@ export const SocketIOCommon = ({
                                           </Button>
                                         ) : (
                                           <Form.Control
+                                            size={"sm"}
+                                            className={"w-50 ms-auto"}
                                             value={String(
                                               optionMap.get(option.name),
                                             )}
@@ -465,6 +484,7 @@ export const SocketIOCommon = ({
                     placeholder="Room ID"
                     value={roomId}
                     onChange={(e) => setRoomId(e.target.value)}
+                    maxLength={4}
                   />
                   <Button
                     className="w-50 mx-auto"
@@ -496,6 +516,7 @@ export const SocketIOCommon = ({
           roleInfo,
           currentRoom,
           myRoles: [...roles],
+          leaveGame,
         }}
       >
         {children}

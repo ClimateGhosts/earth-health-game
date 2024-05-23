@@ -2,9 +2,9 @@ import { interpolateHsl, interpolateRgb } from "d3-interpolate";
 import { Geography } from "react-simple-maps";
 import React, { useContext } from "react";
 import { ColorMode } from "../panels/visual-options-panel";
-import { Color, playerColors, regionColors } from "../../lib/colors";
+import { biomeColor, Color, playerColor } from "../../lib/colors";
 import { regionForGeo } from "./game-map";
-import { GameContext } from "../game";
+import { GameContext, gameData } from "../game";
 
 export default ({ geo }: { geo: any }) => {
   const {
@@ -20,11 +20,11 @@ export default ({ geo }: { geo: any }) => {
   let color = "#666";
   if (region.health > 0) {
     switch (colorMode) {
-      case ColorMode.ByRegionType:
-        color = regionColors[region.region_type._value_];
+      case ColorMode.ByBiome:
+        color = biomeColor(region.biome);
         break;
       case ColorMode.ByOwner:
-        color = playerColors[region.current_player];
+        color = playerColor(region.current_player);
         break;
       case ColorMode.ByHealth:
         color = interpolateHsl(Color.RED, Color.GREEN)(region.health / 10);

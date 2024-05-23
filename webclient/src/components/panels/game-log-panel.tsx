@@ -15,7 +15,7 @@ export default ({
   const [showing, setShowing] = useState(false);
 
   return (
-    <div className={cx("w-50 h-25 text-center", className)}>
+    <div className={cx("w-50 h-25", className)}>
       {showing && (
         <Card
           className={
@@ -37,7 +37,7 @@ export default ({
       <Button
         variant={"outline-dark"}
         className={
-          "border-0 fs-4 pointer-events-auto bottom-0 position-absolute"
+          "border-0 fs-4 pointer-events-auto bottom-0 position-absolute absolute-centered-x"
         }
         onClick={() => setShowing(!showing)}
       >

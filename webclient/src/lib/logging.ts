@@ -1,5 +1,5 @@
 import { Operators } from "../types/earth-health-game";
-import { DisasterBuffer, State } from "../types/state";
+import { State } from "../types/state";
 
 export type Log = { time: number; message: string };
 
@@ -11,17 +11,17 @@ export const logMessageForOperator = (
   let message = `${player} has `;
 
   switch (operator.op_no) {
-    case Operators.UP:
-    case Operators.DOWN:
+    case Operators.EXPLOIT:
+    case Operators.HEAL:
     case Operators.FOREIGN_AID:
     case Operators.RENAME_REGION:
       const region = state!.world.regions[operator.params![0]];
 
       switch (operator.op_no) {
-        case Operators.UP:
+        case Operators.EXPLOIT:
           message += `exploited ${region.name}.`;
           break;
-        case Operators.DOWN:
+        case Operators.HEAL:
           message += `healed ${region.name}.`;
           break;
         case Operators.FOREIGN_AID:
@@ -54,10 +54,10 @@ export const logsForTransitions = (
     return newLogs;
   }
 
-  for (let disaster of newState.current_disasters as DisasterBuffer[]) {
+  for (let disaster of newState.devastations) {
     newLogs.push({
       time: newState.time,
-      message: `${disaster.disaster._value_} in ${disaster.region} (${disaster.damage} damage)`,
+      message: `${disaster.disaster} in ${disaster.region} (${disaster.damage} damage)`,
     });
   }
 

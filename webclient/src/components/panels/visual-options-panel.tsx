@@ -13,7 +13,7 @@ import { GameContext } from "../game";
 
 export enum ColorMode {
   ByOwner = "By Owner",
-  ByRegionType = "By Region Type",
+  ByBiome = "By Biome",
   ByHealth = "By Health",
 }
 export default ({ className }: { className?: string }) => {

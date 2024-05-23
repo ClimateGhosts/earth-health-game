@@ -1,4 +1,4 @@
-import { DisasterType, RegionType } from "../types/earth-health-game";
+import { gameData } from "../components/game";
 
 export enum Color {
   RED = "#C0392B", // A deep red
@@ -11,21 +11,6 @@ export enum Color {
   ORANGE = "#E67E22", // A deep orange
   PURPLE = "#9B59B6", // A subdued purple
 }
-
-export const regionColors = {
-  [RegionType.MESA]: Color.RED,
-  [RegionType.MOUNTAIN]: Color.CYAN,
-  [RegionType.OCEAN]: Color.BLUE,
-  [RegionType.PLAINS]: Color.YELLOW,
-  [RegionType.WOODS]: Color.GREEN,
-} as const satisfies Record<RegionType, string>;
-
-export const disasterColors = {
-  [DisasterType.EARTHQUAKE]: Color.GREEN,
-  [DisasterType.FIRE]: Color.RED,
-  [DisasterType.FLOOD]: Color.BLUE,
-  [DisasterType.WINDSTORM]: Color.YELLOW,
-} as const satisfies Record<DisasterType, string>;
 
 const ansiColors = {
   "91": Color.RED,
@@ -58,10 +43,6 @@ export const ansiToHtml = (text: string) => {
   return `<div>${text}</div>`;
 };
 
-export const playerColors = [
-  Color.RED,
-  Color.GREEN,
-  Color.MAGENTA,
-  Color.ORANGE,
-  Color.CYAN,
-];
+export const biomeColor = (biome: string) => Color[gameData.biome[biome].color];
+export const playerColor = (player: number) =>
+  Color[gameData.player_colors[player]];

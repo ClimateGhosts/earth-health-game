@@ -1,0 +1,172 @@
+{
+  "biomes": [
+    {
+      "name": "Ocean",
+      "color": "BLUE",
+      "playable": false,
+      "emoji": "\uD83C\uDF0A",
+      "disaster_matrix": {
+        "earthquake": 0,
+        "fire": 0,
+        "flood": 0,
+        "windstorm": 0
+      }
+    },
+    {
+      "name": "Mountain",
+      "color": "CYAN",
+      "playable": true,
+      "emoji": "⛰\uFE0F",
+      "disaster_matrix": {
+        "earthquake": 1,
+        "fire": -1,
+        "flood": -2,
+        "windstorm": 2
+      }
+    },
+    {
+      "name": "Plains",
+      "color": "YELLOW",
+      "playable": true,
+      "emoji": "\uD83C\uDF3E",
+      "disaster_matrix": {
+        "earthquake": 2,
+        "fire": 1,
+        "flood": 2,
+        "windstorm": -1
+      }
+    },
+    {
+      "name": "Woods",
+      "color": "GREEN",
+      "playable": true,
+      "emoji": "\uD83C\uDF32",
+      "disaster_matrix": {
+        "earthquake": -1,
+        "fire": 2,
+        "flood": 1,
+        "windstorm": -2
+      }
+    },
+    {
+      "name": "Mesa",
+      "color": "RED",
+      "playable": true,
+      "emoji": "\uD83C\uDFDC\uFE0F",
+      "disaster_matrix": {
+        "earthquake": 2,
+        "fire": -2,
+        "flood": -1,
+        "windstorm": 1
+      }
+    }
+  ],
+  "disasters": [
+    {
+      "name": "Earthquake",
+      "color": "GREEN",
+      "damage": 4,
+      "emoji": "\uD83E\uDEA8",
+      "disaster_matrix": {
+        "fire": 1
+      }
+    },
+    {
+      "name": "Fire",
+      "color": "RED",
+      "damage": 4,
+      "emoji": "\uD83D\uDD25",
+      "disaster_matrix": {
+        "flood": -1,
+        "windstorm": 2,
+        "earthquake": 1
+      }
+    },
+    {
+      "name": "Flood",
+      "color": "BLUE",
+      "damage": 4,
+      "emoji": "\uD83C\uDF0A",
+      "disaster_matrix": {
+        "fire": -1
+      }
+    },
+    {
+      "name": "Windstorm",
+      "color": "YELLOW",
+      "damage": 4,
+      "emoji": "\uD83C\uDF2A\uFE0F",
+      "disaster_matrix": {
+        "fire": 2
+      }
+    }
+  ],
+  "disaster_combos": [
+    {
+      "name": "Fireflood",
+      "disasters": ["fire", "flood"],
+      "effect": -1
+    },
+    {
+      "name": "Firestorm",
+      "disasters": ["fire", "windstorm"],
+      "effect": 2
+    },
+    {
+      "name": "Firequake",
+      "disasters": ["fire", "earthquake"],
+      "effect": 1
+    }
+  ],
+  "player_colors": [
+    "RED",
+    "GREEN",
+    "MAGENTA",
+    "ORANGE",
+    "CYAN"
+  ],
+  "adjacency": {
+    "0": [6, 7, 12, 14],
+    "1": [3, 5, 18],
+    "2": [19],
+    "3": [1, 5, 8, 13, 16],
+    "4": [8, 15, 16],
+    "5": [1, 3, 13, 17],
+    "6": [0, 7, 12, 15],
+    "7": [0, 6, 10, 13, 14, 15],
+    "8": [3, 4, 10, 13, 15, 16],
+    "9": [19],
+    "10": [7, 8, 13, 15],
+    "11": [16],
+    "12": [0, 6],
+    "13": [3, 5, 7, 8, 10, 14, 17],
+    "14": [0, 7, 13],
+    "15": [4, 6, 7, 8, 10],
+    "16": [3, 4, 8, 11],
+    "17": [5, 13],
+    "18": [1, 19],
+    "19": [2, 9, 18]
+  },
+  "names": [
+    "Nova Arcadia",
+    "Elysium",
+    "Astoria",
+    "Aetheria",
+    "Valoria",
+    "Xion",
+    "Seraphina",
+    "Atlantica",
+    "Zirvana",
+    "Avalon",
+    "Galadria",
+    "Mythos",
+    "Ytopia",
+    "Elysian Fields",
+    "Aurora",
+    "Celestia",
+    "Elympia",
+    "Excalibur",
+    "Aden",
+    "Arcadia"
+  ]
+}

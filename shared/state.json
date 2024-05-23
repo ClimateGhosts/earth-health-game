@@ -1,0 +1,1093 @@
+{
+  "player_count": 5,
+  "region_shuffling": false,
+  "world": {
+    "regions": [
+      {
+        "id": 0,
+        "name": "Mythos",
+        "current_player": 4,
+        "biome": "Mountain",
+        "health": 5,
+        "devastation_history": {
+          "0": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Earthquake",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "1": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Fire",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "2": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Flood",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "3": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Windstorm",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ]
+        }
+      },
+      {
+        "id": 1,
+        "name": "Nova Arcadia",
+        "current_player": 4,
+        "biome": "Plains",
+        "health": 5,
+        "devastation_history": {
+          "0": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Earthquake",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "1": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Fire",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "2": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Flood",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "3": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Windstorm",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ]
+        }
+      },
+      {
+        "id": 2,
+        "name": "Excalibur",
+        "current_player": 0,
+        "biome": "Plains",
+        "health": 5,
+        "devastation_history": {
+          "0": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Earthquake",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "1": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Fire",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "2": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Flood",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "3": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Windstorm",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ]
+        }
+      },
+      {
+        "id": 3,
+        "name": "Valoria",
+        "current_player": 4,
+        "biome": "Mountain",
+        "health": 5,
+        "devastation_history": {
+          "0": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Earthquake",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "1": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Fire",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "2": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Flood",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "3": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Windstorm",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ]
+        }
+      },
+      {
+        "id": 4,
+        "name": "Seraphina",
+        "current_player": 2,
+        "biome": "Woods",
+        "health": 5,
+        "devastation_history": {
+          "0": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Earthquake",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "1": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Fire",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "2": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Flood",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "3": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Windstorm",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ]
+        }
+      },
+      {
+        "id": 5,
+        "name": "Arcadia",
+        "current_player": 0,
+        "biome": "Woods",
+        "health": 5,
+        "devastation_history": {
+          "0": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Earthquake",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "1": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Fire",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "2": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Flood",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "3": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Windstorm",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ]
+        }
+      },
+      {
+        "id": 6,
+        "name": "Elysium",
+        "current_player": 4,
+        "biome": "Woods",
+        "health": 5,
+        "devastation_history": {
+          "0": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Earthquake",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "1": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Fire",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "2": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Flood",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "3": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Windstorm",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ]
+        }
+      },
+      {
+        "id": 7,
+        "name": "Astoria",
+        "current_player": 3,
+        "biome": "Woods",
+        "health": 5,
+        "devastation_history": {
+          "0": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Earthquake",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "1": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Fire",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "2": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Flood",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "3": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Windstorm",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ]
+        }
+      },
+      {
+        "id": 8,
+        "name": "Eden",
+        "current_player": 1,
+        "biome": "Woods",
+        "health": 5,
+        "devastation_history": {
+          "0": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Earthquake",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "1": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Fire",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "2": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Flood",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "3": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Windstorm",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ]
+        }
+      },
+      {
+        "id": 9,
+        "name": "Zion",
+        "current_player": 3,
+        "biome": "Plains",
+        "health": 5,
+        "devastation_history": {
+          "0": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Earthquake",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "1": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Fire",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "2": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Flood",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "3": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Windstorm",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ]
+        }
+      },
+      {
+        "id": 10,
+        "name": "Elysian Fields",
+        "current_player": 1,
+        "biome": "Mountain",
+        "health": 5,
+        "devastation_history": {
+          "0": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Earthquake",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "1": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Fire",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "2": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Flood",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "3": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Windstorm",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ]
+        }
+      },
+      {
+        "id": 11,
+        "name": "Galadria",
+        "current_player": 0,
+        "biome": "Woods",
+        "health": 5,
+        "devastation_history": {
+          "0": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Earthquake",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "1": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Fire",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "2": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Flood",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "3": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Windstorm",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ]
+        }
+      },
+      {
+        "id": 12,
+        "name": "Utopia",
+        "current_player": 3,
+        "biome": "Mountain",
+        "health": 5,
+        "devastation_history": {
+          "0": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Earthquake",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "1": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Fire",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "2": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Flood",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "3": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Windstorm",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ]
+        }
+      },
+      {
+        "id": 13,
+        "name": "Olympia",
+        "current_player": 2,
+        "biome": "Mesa",
+        "health": 5,
+        "devastation_history": {
+          "0": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Earthquake",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "1": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Fire",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "2": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Flood",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "3": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Windstorm",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ]
+        }
+      },
+      {
+        "id": 14,
+        "name": "Aetheria",
+        "current_player": 1,
+        "biome": "Mesa",
+        "health": 5,
+        "devastation_history": {
+          "0": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Earthquake",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "1": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Fire",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "2": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Flood",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "3": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Windstorm",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ]
+        }
+      },
+      {
+        "id": 15,
+        "name": "Avalon",
+        "current_player": 2,
+        "biome": "Woods",
+        "health": 5,
+        "devastation_history": {
+          "0": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Earthquake",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "1": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Fire",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "2": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Flood",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "3": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Windstorm",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ]
+        }
+      },
+      {
+        "id": 16,
+        "name": "Nirvana",
+        "current_player": 3,
+        "biome": "Woods",
+        "health": 5,
+        "devastation_history": {
+          "0": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Earthquake",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "1": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Fire",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "2": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Flood",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "3": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Windstorm",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ]
+        }
+      },
+      {
+        "id": 17,
+        "name": "Celestia",
+        "current_player": 1,
+        "biome": "Woods",
+        "health": 5,
+        "devastation_history": {
+          "0": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Earthquake",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "1": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Fire",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "2": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Flood",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "3": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Windstorm",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ]
+        }
+      },
+      {
+        "id": 18,
+        "name": "Atlantica",
+        "current_player": 0,
+        "biome": "Woods",
+        "health": 5,
+        "devastation_history": {
+          "0": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Earthquake",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "1": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Fire",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "2": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Flood",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "3": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Windstorm",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ]
+        }
+      },
+      {
+        "id": 19,
+        "name": "Aurora",
+        "current_player": 2,
+        "biome": "Mountain",
+        "health": 5,
+        "devastation_history": {
+          "0": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Earthquake",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "1": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Fire",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "2": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Flood",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ],
+          "3": [
+            {
+              "region_id": 0,
+              "region": "",
+              "disaster": "Windstorm",
+              "current_owner": 0,
+              "damage": null,
+              "adjacent_damage": null
+            }
+          ]
+        }
+      }
+    ],
+    "region_count": 20
+  },
+  "stat_disasters": [],
+  "time": 0,
+  "current_player": 0,
+  "global_badness": 5,
+  "players": [
+    {
+      "player_id": 0,
+      "regions_owned": 4,
+      "current_actions": {},
+      "money": 100
+    },
+    {
+      "player_id": 1,
+      "regions_owned": 4,
+      "current_actions": {},
+      "money": 100
+    },
+    {
+      "player_id": 2,
+      "regions_owned": 4,
+      "current_actions": {},
+      "money": 100
+    },
+    {
+      "player_id": 3,
+      "regions_owned": 4,
+      "current_actions": {},
+      "money": 100
+    },
+    {
+      "player_id": 4,
+      "regions_owned": 4,
+      "current_actions": {},
+      "money": 100
+    }
+  ],
+  "devastations": [
+    {
+      "region_id": 0,
+      "region": "",
+      "disaster": "Earthquake",
+      "current_owner": 0,
+      "damage": null,
+      "adjacent_damage": null
+    },
+    {
+      "region_id": 0,
+      "region": "",
+      "disaster": "Fire",
+      "current_owner": 0,
+      "damage": null,
+      "adjacent_damage": null
+    },
+    {
+      "region_id": 0,
+      "region": "",
+      "disaster": "Flood",
+      "current_owner": 0,
+      "damage": null,
+      "adjacent_damage": null
+    },
+    {
+      "region_id": 0,
+      "region": "",
+      "disaster": "Windstorm",
+      "current_owner": 0,
+      "damage": null,
+      "adjacent_damage": null
+    }
+  ],
+  "disaster_buffer": [
+    {
+      "region_id": 0,
+      "region": "",
+      "disaster": "Earthquake",
+      "current_owner": 0,
+      "damage": null,
+      "adjacent_damage": null
+    },
+    {
+      "region_id": 0,
+      "region": "",
+      "disaster": "Fire",
+      "current_owner": 0,
+      "damage": null,
+      "adjacent_damage": null
+    },
+    {
+      "region_id": 0,
+      "region": "",
+      "disaster": "Flood",
+      "current_owner": 0,
+      "damage": null,
+      "adjacent_damage": null
+    },
+    {
+      "region_id": 0,
+      "region": "",
+      "disaster": "Windstorm",
+      "current_owner": 0,
+      "damage": null,
+      "adjacent_damage": null
+    }
+  ]
+}

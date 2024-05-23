@@ -1,10 +1,10 @@
 import { Card, Col, Row } from "react-bootstrap";
-import { playerColors } from "../../lib/colors";
 import React, { useContext } from "react";
-import { displayMoney, displayTime, GameContext } from "../game";
+import { displayMoney, displayTime, GameContext, gameData } from "../game";
 import cx from "classnames";
-import { RegionEmoji } from "../../types/earth-health-game";
 import { SocketContext } from "../socketio-common";
+import { playerColor } from "../../lib/colors";
+import { orderBy } from "lodash";
 
 export default ({ className }: { className?: string }) => {
   const { myRoles } = useContext(SocketContext);
@@ -30,32 +30,39 @@ export default ({ className }: { className?: string }) => {
         <>
           <h3 className={"text-center my-3"}>Next Possible Disasters</h3>
           <Row className={"row-cols-1 g-3"}>
-            {state.disaster_buffer.map((disaster, i) => (
-              <Col key={i}>
-                {disaster.disaster._value_} in {disaster.region} (
-                {disaster.damage} damage)
-              </Col>
-            ))}
+            {state.disaster_buffer.map((disaster, i) => {
+              const region = state.world.regions[disaster.region_id];
+              return (
+                <Col key={i}>
+                  {gameData.disaster[disaster.disaster].emoji}
+                  {disaster.disaster} in {gameData.biome[region.biome].emoji}
+                  {region.name}
+                </Col>
+              );
+            })}
           </Row>
         </>
       )}
       <h3 className={"text-center my-3"}>Player Info</h3>
       <Row className={"row-cols-1 g-3"}>
-        {state.players.map((player, i) => (
-          <Col key={i}>
+        {orderBy(
+          state.players,
+          (player) => !myRoles.includes(player.player_id),
+        ).map((player) => (
+          <Col key={player.player_id}>
             <Row
               className={"row-cols-1 p-2 g-2 rounded-2"}
-              style={{ border: `.5rem ${playerColors[i]} solid` }}
+              style={{ border: `.5rem ${playerColor(player.player_id)} solid` }}
             >
               <Col>
-                {nameForPlayer(i)}: {displayMoney(player.money)}
+                {nameForPlayer(player.player_id)}: {displayMoney(player.money)}
               </Col>
               {Object.values(state.world.regions)
                 .filter((region) => region.current_player === player.player_id)
                 .map((region, i) => (
                   <Col key={i} className={"ms-4"}>
-                    {region.name} ({region.region_type._value_}
-                    {RegionEmoji[region.region_type._value_]}, {region.health}
+                    {region.name} ({region.biome}
+                    {gameData.biome[region.biome].emoji}, {region.health}
                     ❤️)
                   </Col>
                 ))}

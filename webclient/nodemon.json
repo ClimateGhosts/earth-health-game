@@ -1,0 +1,6 @@
+{
+  "watch": [
+    "../shared/*.json"
+  ],
+  "exec": "npm run generate"
+}

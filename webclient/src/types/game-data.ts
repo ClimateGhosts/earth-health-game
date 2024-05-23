@@ -1,81 +1,59 @@
 // To parse this data:
 //
-//   import { Convert, State } from "./file";
+//   import { Convert, GameData } from "./file";
 //
-//   const state = Convert.toState(json);
+//   const gameData = Convert.toGameData(json);
 //
 // These functions will throw an error if the JSON doesn't
 // match the expected interface, even if the JSON is valid.
 
-export interface State {
-    player_count:     number;
-    region_shuffling: boolean;
-    world:            World;
-    stat_disasters:   any[];
-    time:             number;
-    current_player:   number;
-    global_badness:   number;
-    players:          Player[];
-    devastations:     Devastation[];
-    disaster_buffer:  Devastation[];
+export interface GameData {
+    biomes:          Biome[];
+    disasters:       Disaster[];
+    disaster_combos: DisasterCombo[];
+    player_colors:   string[];
+    adjacency:       { [key: string]: number[] };
+    names:           string[];
 }
 
-export interface Devastation {
-    region_id:       number;
-    region:          string;
-    disaster:        Disaster;
-    current_owner:   number;
-    damage:          null;
-    adjacent_damage: null;
+export interface Biome {
+    name:            string;
+    color:           string;
+    playable:        boolean;
+    emoji:           string;
+    disaster_matrix: DisasterMatrix;
 }
 
-export enum Disaster {
-    Earthquake = "Earthquake",
-    Fire = "Fire",
-    Flood = "Flood",
-    Windstorm = "Windstorm",
+export interface DisasterMatrix {
+    earthquake?: number;
+    fire?:       number;
+    flood?:      number;
+    windstorm?:  number;
 }
 
-export interface Player {
-    player_id:       number;
-    regions_owned:   number;
-    current_actions: CurrentActions;
-    money:           number;
+export interface DisasterCombo {
+    name:      string;
+    disasters: string[];
+    effect:    number;
 }
 
-export interface CurrentActions {
-}
-
-export interface World {
-    regions:      Region[];
-    region_count: number;
-}
-
-export interface Region {
-    id:                  number;
-    name:                string;
-    current_player:      number;
-    biome:               Biome;
-    health:              number;
-    devastation_history: { [key: string]: Devastation[] };
-}
-
-export enum Biome {
-    Mesa = "Mesa",
-    Mountain = "Mountain",
-    Plains = "Plains",
-    Woods = "Woods",
+export interface Disaster {
+    name:            string;
+    color:           string;
+    damage:          number;
+    emoji:           string;
+    disaster_matrix: DisasterMatrix;
 }
 
 // Converts JSON strings to/from your types
 // and asserts the results of JSON.parse at runtime
 export class Convert {
-    public static toState(json: string): State {
-        return cast(JSON.parse(json), r("State"));
+    public static toGameData(json: string): GameData {
+        return cast(JSON.parse(json), r("GameData"));
     }
 
-    public static stateToJson(value: State): string {
-        return JSON.stringify(uncast(value, r("State")), null, 2);
+    public static gameDataToJson(value: GameData): string {
+        return JSON.stringify(uncast(value, r("GameData")), null, 2);
     }
 }
 
@@ -232,56 +210,37 @@ function r(name: string) {
 }
 
 const typeMap: any = {
-    "State": o([
-        { json: "player_count", js: "player_count", typ: 0 },
-        { json: "region_shuffling", js: "region_shuffling", typ: true },
-        { json: "world", js: "world", typ: r("World") },
-        { json: "stat_disasters", js: "stat_disasters", typ: a("any") },
-        { json: "time", js: "time", typ: 0 },
-        { json: "current_player", js: "current_player", typ: 0 },
-        { json: "global_badness", js: "global_badness", typ: 0 },
-        { json: "players", js: "players", typ: a(r("Player")) },
-        { json: "devastations", js: "devastations", typ: a(r("Devastation")) },
-        { json: "disaster_buffer", js: "disaster_buffer", typ: a(r("Devastation")) },
+    "GameData": o([
+        { json: "biomes", js: "biomes", typ: a(r("Biome")) },
+        { json: "disasters", js: "disasters", typ: a(r("Disaster")) },
+        { json: "disaster_combos", js: "disaster_combos", typ: a(r("DisasterCombo")) },
+        { json: "player_colors", js: "player_colors", typ: a("") },
+        { json: "adjacency", js: "adjacency", typ: m(a(0)) },
+        { json: "names", js: "names", typ: a("") },
     ], false),
-    "Devastation": o([
-        { json: "region_id", js: "region_id", typ: 0 },
-        { json: "region", js: "region", typ: "" },
-        { json: "disaster", js: "disaster", typ: r("Disaster") },
-        { json: "current_owner", js: "current_owner", typ: 0 },
-        { json: "damage", js: "damage", typ: null },
-        { json: "adjacent_damage", js: "adjacent_damage", typ: null },
-    ], false),
-    "Player": o([
-        { json: "player_id", js: "player_id", typ: 0 },
-        { json: "regions_owned", js: "regions_owned", typ: 0 },
-        { json: "current_actions", js: "current_actions", typ: r("CurrentActions") },
-        { json: "money", js: "money", typ: 0 },
-    ], false),
-    "CurrentActions": o([
-    ], false),
-    "World": o([
-        { json: "regions", js: "regions", typ: a(r("Region")) },
-        { json: "region_count", js: "region_count", typ: 0 },
-    ], false),
-    "Region": o([
-        { json: "id", js: "id", typ: 0 },
+    "Biome": o([
         { json: "name", js: "name", typ: "" },
-        { json: "current_player", js: "current_player", typ: 0 },
-        { json: "biome", js: "biome", typ: r("Biome") },
-        { json: "health", js: "health", typ: 0 },
-        { json: "devastation_history", js: "devastation_history", typ: m(a(r("Devastation"))) },
+        { json: "color", js: "color", typ: "" },
+        { json: "playable", js: "playable", typ: true },
+        { json: "emoji", js: "emoji", typ: "" },
+        { json: "disaster_matrix", js: "disaster_matrix", typ: r("DisasterMatrix") },
     ], false),
-    "Disaster": [
-        "Earthquake",
-        "Fire",
-        "Flood",
-        "Windstorm",
-    ],
-    "Biome": [
-        "Mesa",
-        "Mountain",
-        "Plains",
-        "Woods",
-    ],
+    "DisasterMatrix": o([
+        { json: "earthquake", js: "earthquake", typ: u(undefined, 0) },
+        { json: "fire", js: "fire", typ: u(undefined, 0) },
+        { json: "flood", js: "flood", typ: u(undefined, 0) },
+        { json: "windstorm", js: "windstorm", typ: u(undefined, 0) },
+    ], false),
+    "DisasterCombo": o([
+        { json: "name", js: "name", typ: "" },
+        { json: "disasters", js: "disasters", typ: a("") },
+        { json: "effect", js: "effect", typ: 0 },
+    ], false),
+    "Disaster": o([
+        { json: "name", js: "name", typ: "" },
+        { json: "color", js: "color", typ: "" },
+        { json: "damage", js: "damage", typ: 0 },
+        { json: "emoji", js: "emoji", typ: "" },
+        { json: "disaster_matrix", js: "disaster_matrix", typ: r("DisasterMatrix") },
+    ], false),
 };
