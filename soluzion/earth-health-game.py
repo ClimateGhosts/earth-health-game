@@ -1,8 +1,9 @@
+from __future__ import annotations
+
 import json
 import math
 import random
 from copy import deepcopy
-from enum import Enum
 from typing import List, Optional
 
 import jsonpickle
@@ -78,8 +79,8 @@ class Devastation:
     region: str
     disaster: str
     current_owner: int
-    damage: int | None = None
-    adjacent_damage: dict[int, int] | None = None
+    damage: Optional[int] = None
+    adjacent_damage: Optional[dict[int, int]] = None
 
     def __str__(self):
         return f"{disasters[self.disaster].emoji}{self.disaster} in {self.region} ({self.damage} damage)"
