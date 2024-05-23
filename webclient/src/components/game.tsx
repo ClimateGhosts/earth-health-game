@@ -52,7 +52,6 @@ export const gameData = {
   ...(gamedata as GameData),
   biome: keyBy(gamedata.biomes, (b) => b.name),
   disaster: keyBy(gamedata.disasters, (d) => d.name),
-  disasterCombo: keyBy(gamedata.disaster_combos, (d) => d.name),
 };
 
 export default () => {
