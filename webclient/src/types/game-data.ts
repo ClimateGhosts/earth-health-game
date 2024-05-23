@@ -8,12 +8,11 @@
 // match the expected interface, even if the JSON is valid.
 
 export interface GameData {
-    biomes:          Biome[];
-    disasters:       Disaster[];
-    disaster_combos: DisasterCombo[];
-    player_colors:   string[];
-    adjacency:       { [key: string]: number[] };
-    names:           string[];
+    biomes:        Biome[];
+    disasters:     Disaster[];
+    player_colors: string[];
+    adjacency:     { [key: string]: number[] };
+    names:         string[];
 }
 
 export interface Biome {
@@ -29,12 +28,6 @@ export interface DisasterMatrix {
     Fire?:       number;
     Flood?:      number;
     Windstorm?:  number;
-}
-
-export interface DisasterCombo {
-    name:      string;
-    disasters: string[];
-    effect:    number;
 }
 
 export interface Disaster {
@@ -213,7 +206,6 @@ const typeMap: any = {
     "GameData": o([
         { json: "biomes", js: "biomes", typ: a(r("Biome")) },
         { json: "disasters", js: "disasters", typ: a(r("Disaster")) },
-        { json: "disaster_combos", js: "disaster_combos", typ: a(r("DisasterCombo")) },
         { json: "player_colors", js: "player_colors", typ: a("") },
         { json: "adjacency", js: "adjacency", typ: m(a(0)) },
         { json: "names", js: "names", typ: a("") },
@@ -230,11 +222,6 @@ const typeMap: any = {
         { json: "Fire", js: "Fire", typ: u(undefined, 0) },
         { json: "Flood", js: "Flood", typ: u(undefined, 0) },
         { json: "Windstorm", js: "Windstorm", typ: u(undefined, 0) },
-    ], false),
-    "DisasterCombo": o([
-        { json: "name", js: "name", typ: "" },
-        { json: "disasters", js: "disasters", typ: a("") },
-        { json: "effect", js: "effect", typ: 0 },
     ], false),
     "Disaster": o([
         { json: "name", js: "name", typ: "" },

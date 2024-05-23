@@ -68,7 +68,7 @@
       "damage": 4,
       "emoji": "\uD83E\uDEA8",
       "disaster_matrix": {
-        "Fire": 1
+        "Flood": 1
       }
     },
     {
@@ -78,8 +78,7 @@
       "emoji": "\uD83D\uDD25",
       "disaster_matrix": {
         "Flood": -1,
-        "Windstorm": 2,
-        "Earthquake": 1
+        "Windstorm": 1
       }
     },
     {
@@ -97,25 +96,8 @@
       "damage": 4,
       "emoji": "\uD83C\uDF2A\uFE0F",
       "disaster_matrix": {
-        "Fire": 2
+        "Earthquake": 1
       }
-    }
-  ],
-  "disaster_combos": [
-    {
-      "name": "FireFlood",
-      "disasters": ["Fire", "Flood"],
-      "effect": -1
-    },
-    {
-      "name": "Firestorm",
-      "disasters": ["Fire", "Windstorm"],
-      "effect": 2
-    },
-    {
-      "name": "Firequake",
-      "disasters": ["Fire", "Earthquake"],
-      "effect": 1
     }
   ],
   "player_colors": [

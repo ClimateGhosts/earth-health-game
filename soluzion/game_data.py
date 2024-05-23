@@ -116,32 +116,6 @@ class Biome:
         return result
 
 
-class DisasterCombo:
-    name: str
-    disasters: List[str]
-    effect: int
-
-    def __init__(self, name: str, disasters: List[str], effect: int) -> None:
-        self.name = name
-        self.disasters = disasters
-        self.effect = effect
-
-    @staticmethod
-    def from_dict(obj: Any) -> 'DisasterCombo':
-        assert isinstance(obj, dict)
-        name = from_str(obj.get("name"))
-        disasters = from_list(from_str, obj.get("disasters"))
-        effect = from_int(obj.get("effect"))
-        return DisasterCombo(name, disasters, effect)
-
-    def to_dict(self) -> dict:
-        result: dict = {}
-        result["name"] = from_str(self.name)
-        result["disasters"] = from_list(from_str, self.disasters)
-        result["effect"] = from_int(self.effect)
-        return result
-
-
 class Disaster:
     name: str
     color: str
@@ -179,15 +153,13 @@ class Disaster:
 class GameData:
     biomes: List[Biome]
     disasters: List[Disaster]
-    disaster_combos: List[DisasterCombo]
     player_colors: List[str]
     adjacency: Dict[str, List[int]]
     names: List[str]
 
-    def __init__(self, biomes: List[Biome], disasters: List[Disaster], disaster_combos: List[DisasterCombo], player_colors: List[str], adjacency: Dict[str, List[int]], names: List[str]) -> None:
+    def __init__(self, biomes: List[Biome], disasters: List[Disaster], player_colors: List[str], adjacency: Dict[str, List[int]], names: List[str]) -> None:
         self.biomes = biomes
         self.disasters = disasters
-        self.disaster_combos = disaster_combos
         self.player_colors = player_colors
         self.adjacency = adjacency
         self.names = names
@@ -197,17 +169,15 @@ class GameData:
         assert isinstance(obj, dict)
         biomes = from_list(Biome.from_dict, obj.get("biomes"))
         disasters = from_list(Disaster.from_dict, obj.get("disasters"))
-        disaster_combos = from_list(DisasterCombo.from_dict, obj.get("disaster_combos"))
         player_colors = from_list(from_str, obj.get("player_colors"))
         adjacency = from_dict(lambda x: from_list(from_int, x), obj.get("adjacency"))
         names = from_list(from_str, obj.get("names"))
-        return GameData(biomes, disasters, disaster_combos, player_colors, adjacency, names)
+        return GameData(biomes, disasters, player_colors, adjacency, names)
 
     def to_dict(self) -> dict:
         result: dict = {}
         result["biomes"] = from_list(lambda x: to_class(Biome, x), self.biomes)
         result["disasters"] = from_list(lambda x: to_class(Disaster, x), self.disasters)
-        result["disaster_combos"] = from_list(lambda x: to_class(DisasterCombo, x), self.disaster_combos)
         result["player_colors"] = from_list(from_str, self.player_colors)
         result["adjacency"] = from_dict(lambda x: from_list(from_int, x), self.adjacency)
         result["names"] = from_list(from_str, self.names)

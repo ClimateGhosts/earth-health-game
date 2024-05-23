@@ -1,20 +1,18 @@
-from __future__ import annotations
-
 import json
 import math
 import random
-from copy import deepcopy
-from typing import List, Optional
-
 import jsonpickle
 
+from copy import deepcopy
+from typing import List, Optional
 from game_data import GameData
 from soluzion import Basic_Operator
+from dataclasses import dataclass
 
 # region METADATA
 SOLUZION_VERSION = "4.0"
 PROBLEM_NAME = "Earth Health"
-PROBLEM_VERSION = "0.5.1"  # TODO Keep updating this value to make the server deployment always use the latest version
+PROBLEM_VERSION = "0.5.2"  # TODO Keep updating this value to make the server deployment always use the latest version
 PROBLEM_AUTHORS = ["Alicia Stepin", "Andrey Risukhin", "James Gale", "Maxim Kuznetsov"]
 PROBLEM_CREATION_DATE = "23-APRIL-2024"
 PROBLEM_DESC = """
@@ -25,15 +23,12 @@ PROBLEM_DESC = """
 # endregion METADATA
 
 
-from dataclasses import dataclass
-
 game_data = GameData.from_dict(json.load(open("../shared/gamedata.json")))
 """Imported static game data from the shared json file"""
 
 biomes = dict((biome.name, biome) for biome in game_data.biomes)
 playable_biomes = [biome.name for biome in game_data.biomes if biome.playable]
 disasters = dict((disaster.name, disaster) for disaster in game_data.disasters)
-disaster_combos = dict((combo.name, combo) for combo in game_data.disaster_combos)
 
 # World
 SEED = None  # 1701
