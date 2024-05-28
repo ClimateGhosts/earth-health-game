@@ -44,7 +44,10 @@ export default ({ className }: { className?: string }) => {
 
   return (
     currentRegion && (
-      <Card className={cx("shadow-lg w-25 p-3 pointer-events-auto", className)}>
+      <Card
+        className={cx("shadow-lg w-25 p-3 overflow-y-auto  pointer-events-auto", className)}
+        style={{ maxHeight: "70vh" }}
+      >
         <Row className={"row-cols-1 g-3"}>
           <Col className={"text-center"}>
             <h2 className={"mb-3"}>

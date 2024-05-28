@@ -41,15 +41,12 @@ export default ({
           {myDisasters.map((disaster) => (
             <p>
               <DisasterEntry disaster={disaster} state={newState} />
-              {newState.world.regions[disaster.region_id].health <= 0 && " (DESTROYED💀)"}
             </p>
           ))}
           <h5 className={"mb-3"}>{otherDisasters.length} hit in other regions</h5>
           {otherDisasters.map((disaster) => (
             <p>
-              <DisasterEntry disaster={disaster} state={newState} />
-              {newState.world.regions[disaster.region_id].health <= 0 && " (DESTROYED💀)"} for{" "}
-              {nameForPlayer(disaster.current_owner)}
+              <DisasterEntry disaster={disaster} state={newState} nameForPlayer={nameForPlayer} />
             </p>
           ))}
         </>

@@ -7,6 +7,15 @@ import { playerColor } from "../../lib/colors";
 import { orderBy } from "lodash";
 import DisasterEntry from "../disaster-entry";
 
+const ClimateBadness = ({ badness }: { badness: number }) => {
+  let message = "Moderate";
+  if (badness >= 10) message = "Bad";
+  if (badness >= 15) message = "Terrible";
+  if (badness >= 20) message = "Apocalyptic";
+
+  return <>Climate Severity: {message}</>;
+};
+
 export default ({ className }: { className?: string }) => {
   const { myRoles } = useContext(SocketContext);
   const { state, nameForPlayer } = useContext(GameContext);
@@ -18,8 +27,12 @@ export default ({ className }: { className?: string }) => {
     >
       <h3 className={"text-center"}>State Info</h3>
       <Row className={"row-cols-1 g-2"}>
-        <Col>Time: {displayTime(state.time)}</Col>
-        <Col>Climate Badness: {state.global_badness}</Col>
+        <Col>
+          Time: {displayTime(state.time)} (playing until {displayTime(state.final_turn)})
+        </Col>
+        <Col>
+          <ClimateBadness badness={state.global_badness} />
+        </Col>
       </Row>
       {state.players.some(
         (player) => myRoles.includes(player.player_id) && player.regions_owned <= 0,
@@ -29,7 +42,7 @@ export default ({ className }: { className?: string }) => {
           <Row className={"row-cols-1 g-3"}>
             {state.disaster_buffer.map((disaster, i) => (
               <Col key={i}>
-                <DisasterEntry disaster={disaster} state={state} />
+                <DisasterEntry disaster={disaster} state={state} nameForPlayer={nameForPlayer} />
               </Col>
             ))}
           </Row>
@@ -43,18 +56,24 @@ export default ({ className }: { className?: string }) => {
               className={"row-cols-1 p-2 g-2 rounded-2"}
               style={{ border: `.5rem ${playerColor(player.player_id)} solid` }}
             >
-              <Col>
-                {nameForPlayer(player.player_id)}: {displayMoney(player.money)}
-              </Col>
-              {Object.values(state.world.regions)
-                .filter((region) => region.current_player === player.player_id)
-                .map((region, i) => (
-                  <Col key={i} className={"ms-4"}>
-                    {region.name} ({region.biome}
-                    {gameData.biome[region.biome].emoji}, {region.health}
-                    ❤️)
+              {player.regions_owned > 0 ? (
+                <>
+                  <Col>
+                    {nameForPlayer(player.player_id)}: {displayMoney(player.money)}
                   </Col>
-                ))}
+                  {Object.values(state.world.regions)
+                    .filter((region) => region.current_player === player.player_id)
+                    .map((region, i) => (
+                      <Col key={i} className={"ms-4"}>
+                        {region.name} ({region.biome}
+                        {gameData.biome[region.biome].emoji}, {region.health}
+                        ❤️)
+                      </Col>
+                    ))}
+                </>
+              ) : (
+                <>{nameForPlayer(player.player_id)} 👻</>
+              )}
             </Row>
           </Col>
         ))}

@@ -10,6 +10,8 @@
 export interface State {
     player_count:     number;
     region_shuffling: boolean;
+    final_turn:       number;
+    aoe_disasters:    boolean;
     world:            World;
     stat_disasters:   any[];
     time:             number;
@@ -235,6 +237,8 @@ const typeMap: any = {
     "State": o([
         { json: "player_count", js: "player_count", typ: 0 },
         { json: "region_shuffling", js: "region_shuffling", typ: true },
+        { json: "final_turn", js: "final_turn", typ: 0 },
+        { json: "aoe_disasters", js: "aoe_disasters", typ: true },
         { json: "world", js: "world", typ: r("World") },
         { json: "stat_disasters", js: "stat_disasters", typ: a("any") },
         { json: "time", js: "time", typ: 0 },

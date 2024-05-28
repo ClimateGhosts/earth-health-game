@@ -4,9 +4,17 @@ import React from "react";
 import { colorForDamage } from "./panels/selected-region-panel";
 
 /**
- * Pass in the game state to have it say the region target
+ * Pass in the game state to have it say the region target / nameForPlayer to also say player name
  */
-export default ({ disaster, state }: { disaster: Devastation; state?: State }) => {
+export default ({
+  disaster,
+  state,
+  nameForPlayer,
+}: {
+  disaster: Devastation;
+  state?: State;
+  nameForPlayer?: (id: number) => string;
+}) => {
   const region = state?.world.regions[disaster.region_id];
   return (
     <>
@@ -24,6 +32,8 @@ export default ({ disaster, state }: { disaster: Devastation; state?: State }) =
           {" "}
           in {gameData.biome[region.biome].emoji}
           {region.name}
+          {region.health <= 0 && " (DESTROYED💀)"}
+          {nameForPlayer && <> for {nameForPlayer(disaster.current_owner)}</>}
         </>
       )}
     </>

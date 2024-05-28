@@ -12,7 +12,7 @@ from dataclasses import dataclass
 # region METADATA
 SOLUZION_VERSION = "4.0"
 PROBLEM_NAME = "Earth Health"
-PROBLEM_VERSION = "0.5.2"  # TODO Keep updating this value to make the server deployment always use the latest version
+PROBLEM_VERSION = "0.5.3"  # TODO Keep updating this value to make the server deployment always use the latest version
 PROBLEM_AUTHORS = ["Alicia Stepin", "Andrey Risukhin", "James Gale", "Maxim Kuznetsov"]
 PROBLEM_CREATION_DATE = "23-APRIL-2024"
 PROBLEM_DESC = """
@@ -327,14 +327,14 @@ class State:
         # Biome vulnerability / resistance
         devastation.damage += getattr(
             biome.disaster_matrix, devastation.disaster.lower(), 0
-        )
+        ) or 0
 
         # Past disasters affecting vulnerability / resistance
         for time, devastations in region.devastation_history.items():
             for d in devastations:
                 devastation.damage += getattr(
                     disasters[d.disaster].disaster_matrix, d.disaster.lower(), 0
-                )
+                ) or 0
 
         # Apply main damage
         self.apply_damage(region, devastation.damage)
@@ -362,13 +362,17 @@ class State:
         """
         self.time += 1
 
+        self.devastations.clear()
+
+        if self.is_goal():
+            return
+
         for player in self.players:
             if player.money < 10:
                 player.money = 0
             else:
                 player.money -= 10
 
-        self.devastations.clear()
 
         # Choose and apply current devastations
         for devastation in self.disaster_buffer:

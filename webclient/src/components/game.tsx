@@ -25,6 +25,7 @@ import { GameData } from "../types/game-data";
 import { keyBy } from "lodash";
 import MenuPanel from "./panels/menu-panel";
 import Transition from "./transition";
+import GameOver from "./game-over";
 
 export type GameContext = {
   state: State;
@@ -91,7 +92,7 @@ export default () => {
   const myTurn = !!state && myRoles.includes(state.current_player);
 
   const nameForPlayer = (playerId: number) =>
-    `${roleInfo?.[playerId]?.name} (${namesByRole[playerId]})`;
+    playerId < 0 ? "Nobody" : `${roleInfo?.[playerId]?.name} (${namesByRole[playerId]})`;
 
   const [playMyTurnSound] = useSound(
     (process.env.NEXT_PUBLIC_BASE_PATH || "") + "/audio/EarthHealthTurnStart.mp3",
@@ -110,12 +111,16 @@ export default () => {
 
     if (state && previousState && state.time !== previousState.time) {
       transitionList.push(
-        <Transition
-          prevState={previousState}
-          newState={state}
-          gameContext={gameContext}
-          socketContext={socketContext}
-        />,
+        state.time < state.final_turn ? (
+          <Transition
+            prevState={previousState}
+            newState={state}
+            gameContext={gameContext}
+            socketContext={socketContext}
+          />
+        ) : (
+          <GameOver state={state} gameContext={gameContext} socketContext={socketContext} />
+        ),
       );
     }
   }, [state, myRoles]);
@@ -125,6 +130,7 @@ export default () => {
 
     socket.on("game_started", (event) => {
       if (!event.state) return;
+      setGameOver(false);
       setState(JSON.parse(event.state) as State);
       gameLogs.push({ time: 0, message: "The game has started!" });
     });
@@ -161,6 +167,10 @@ export default () => {
         />,
       );
       */
+    });
+
+    socket.on("game_ended", () => {
+      setGameOver(true);
     });
 
     socket.on("disconnect", () => {
