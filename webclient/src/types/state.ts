@@ -8,18 +8,21 @@
 // match the expected interface, even if the JSON is valid.
 
 export interface State {
-    player_count:     number;
-    region_shuffling: boolean;
-    final_turn:       number;
-    aoe_disasters:    boolean;
-    world:            World;
-    stat_disasters:   any[];
-    time:             number;
-    current_player:   number;
-    global_badness:   number;
-    players:          Player[];
-    devastations:     Devastation[];
-    disaster_buffer:  Devastation[];
+    player_count:          number;
+    region_shuffling:      boolean;
+    final_turn:            number;
+    aoe_disasters:         boolean;
+    global_badness:        number;
+    disasters_per_badness: number;
+    base_disasters:        number;
+    max_disasters:         number;
+    world:                 World;
+    stat_disasters:        any[];
+    time:                  number;
+    current_player:        number;
+    players:               Player[];
+    devastations:          Devastation[];
+    disaster_buffer:       Devastation[];
 }
 
 export interface Devastation {
@@ -239,11 +242,14 @@ const typeMap: any = {
         { json: "region_shuffling", js: "region_shuffling", typ: true },
         { json: "final_turn", js: "final_turn", typ: 0 },
         { json: "aoe_disasters", js: "aoe_disasters", typ: true },
+        { json: "global_badness", js: "global_badness", typ: 0 },
+        { json: "disasters_per_badness", js: "disasters_per_badness", typ: 3.14 },
+        { json: "base_disasters", js: "base_disasters", typ: 0 },
+        { json: "max_disasters", js: "max_disasters", typ: 0 },
         { json: "world", js: "world", typ: r("World") },
         { json: "stat_disasters", js: "stat_disasters", typ: a("any") },
         { json: "time", js: "time", typ: 0 },
         { json: "current_player", js: "current_player", typ: 0 },
-        { json: "global_badness", js: "global_badness", typ: 0 },
         { json: "players", js: "players", typ: a(r("Player")) },
         { json: "devastations", js: "devastations", typ: a(r("Devastation")) },
         { json: "disaster_buffer", js: "disaster_buffer", typ: a(r("Devastation")) },

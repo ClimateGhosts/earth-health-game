@@ -1,18 +1,19 @@
 import json
 import math
 import random
+from copy import deepcopy
+from dataclasses import dataclass
+from typing import List, Optional
+
 import jsonpickle
 
-from copy import deepcopy
-from typing import List, Optional
 from game_data import GameData
 from soluzion import Basic_Operator
-from dataclasses import dataclass
 
 # region METADATA
 SOLUZION_VERSION = "4.0"
 PROBLEM_NAME = "Earth Health"
-PROBLEM_VERSION = "0.5.3"  # TODO Keep updating this value to make the server deployment always use the latest version
+PROBLEM_VERSION = "0.5.4"  # TODO Keep updating this value to make the server deployment always use the latest version
 PROBLEM_AUTHORS = ["Alicia Stepin", "Andrey Risukhin", "James Gale", "Maxim Kuznetsov"]
 PROBLEM_CREATION_DATE = "23-APRIL-2024"
 PROBLEM_DESC = """
@@ -32,13 +33,12 @@ disasters = dict((disaster.name, disaster) for disaster in game_data.disasters)
 
 # World
 SEED = None  # 1701
-STARTING_BADNESS = 5
+STARTING_BADNESS = 0
 
 # Disasters
-MAX_DISASTERS_PER_ROUND = 5
-DISASTER_CHANCE_FACTOR = (
-    0.95  # Threshold for disasters to occur. lower = more disasters
-)
+BASE_DISASTERS_PER_ROUND = 3
+DISASTERS_PER_BADNESS = 1 / 5
+MAX_DISASTERS_PER_ROUND = 10
 DEFAULT_DISASTER_DAMAGE = 4
 
 # Regions
@@ -55,6 +55,7 @@ END_OF_UNIVERSE = 5
 
 random.seed(SEED)
 
+
 # region COMMON_CODE
 
 
@@ -62,6 +63,10 @@ class GameOptions:
     Players = "players"
     GameLength = "Game Length"
     RegionShuffling = "Region Shuffling"
+    StartingBadness = "Base Climate Severity"
+    DisastersPerBadness = "Climate Severity Factor"
+    BaseDisastersPerRound = "Base Disasters / Round"
+    MaxDisastersPerRound = "Max Disasters / Round"
 
 
 @dataclass
@@ -166,7 +171,7 @@ class WorldState:
         """
         for p in players:
             for i in range(
-                p.regions_owned
+                    p.regions_owned
             ):  # This assumes there will always be enough regions. The last player has the "least" choice if we
                 # hardcode balancing.
                 # Randomly select a region from the world. If it is not ocean, assign it. Otherwise, try again.
@@ -174,9 +179,9 @@ class WorldState:
                     while True:
                         region = random.choice(list(self.regions))
                         if (
-                            region.current_player == -1
-                            and biomes[region.biome].playable
-                            and region.health > 0
+                                region.current_player == -1
+                                and biomes[region.biome].playable
+                                and region.health > 0
                         ):
                             region.current_player = p.player_id
                             break
@@ -204,13 +209,16 @@ class State:
         self.region_shuffling = bool(args.get(GameOptions.RegionShuffling, False))
         self.final_turn = int(args.get(GameOptions.GameLength, END_OF_UNIVERSE))
         self.aoe_disasters = False
+        self.global_badness = int(args.get(GameOptions.StartingBadness, STARTING_BADNESS))
+        self.disasters_per_badness = float(args.get(GameOptions.DisastersPerBadness, DISASTERS_PER_BADNESS))
+        self.base_disasters = int(args.get(GameOptions.BaseDisastersPerRound, BASE_DISASTERS_PER_ROUND))
+        self.max_disasters = int(args.get(GameOptions.MaxDisastersPerRound, MAX_DISASTERS_PER_ROUND))
 
         self.world = WorldState()
         self.stat_disasters: List[int] = []
         """Indexed by time step, summary statistics to plot."""
         self.time = 0
         self.current_player = 0
-        self.global_badness = STARTING_BADNESS
         self.players = [
             PlayerState(player_id, TOTAL_REGIONS // self.player_count, {})
             for player_id in range(self.player_count)
@@ -247,7 +255,7 @@ class State:
             result += "\n"
 
         if self.time < self.final_turn and not all(
-            p.regions_owned <= 0 for p in self.players
+                p.regions_owned <= 0 for p in self.players
         ):
 
             result += f"\nIt is Player {self.current_player}'s turn.\n"
@@ -263,8 +271,8 @@ class State:
                 result += "You are deciding for:"
                 for r in self.world.regions:
                     if (
-                        r.current_player == self.current_player
-                        and r.id not in player.current_actions
+                            r.current_player == self.current_player
+                            and r.id not in player.current_actions
                     ):
                         result += f"\n[{r.id}] {r}"
 
@@ -294,10 +302,13 @@ class State:
         return msg
 
     def generate_disaster_buffer(self) -> list[Devastation]:
+        total_disasters = self.base_disasters + math.floor(self.global_badness * self.disasters_per_badness)
+        if random.random() < (self.global_badness * self.disasters_per_badness) % 1:
+            total_disasters += 1
 
         current_disaster_types = [
             random.choice(list(disasters.keys()))
-            for _ in range(0, MAX_DISASTERS_PER_ROUND)
+            for _ in range(0, total_disasters)
         ]
 
         new_disaster_buffer = []
@@ -373,15 +384,16 @@ class State:
             else:
                 player.money -= 10
 
+        # Pad the buffer a bit if climate badness went way up during this round
+        alt_buffer = self.generate_disaster_buffer()
+        if len(alt_buffer) > len(self.disaster_buffer):
+            for i in range(len(self.disaster_buffer), len(alt_buffer)):
+                self.disaster_buffer.append(alt_buffer[i])
 
         # Choose and apply current devastations
         for devastation in self.disaster_buffer:
-            if random.random() > math.pow(
-                DISASTER_CHANCE_FACTOR, self.global_badness
-            ):  # Uniform[0,1] > [0,1]^[5,inf) # Initially 0.95^5 = 0.77, 23% chance of disaster
-                self.devastations.append(devastation)
-
-                self.apply_devastation(devastation)
+            self.devastations.append(devastation)
+            self.apply_devastation(devastation)
 
         # Save devastations history
         for devastation in self.devastations:
@@ -494,9 +506,9 @@ class RegionAction(PlayerAction):
 
     def is_applicable(self, state: State, role=None):
         return (
-            super().is_applicable(state, role)
-            and state.players[state.current_player].regions_owned > 0
-            and state.players[state.current_player].money >= -self.net_money
+                super().is_applicable(state, role)
+                and state.players[state.current_player].regions_owned > 0
+                and state.players[state.current_player].money >= -self.net_money
         )
 
     def get_name(self, state: State):
@@ -562,8 +574,8 @@ class ClimateGhostOperator(PlayerAction):
 
     def is_applicable(self, state: State, role=None):
         return (
-            super().is_applicable(state, role)
-            and state.players[state.current_player].regions_owned <= 0
+                super().is_applicable(state, role)
+                and state.players[state.current_player].regions_owned <= 0
         )
 
     def update_state(self, state: State, args: Optional[dict[str, any]] = None):
@@ -605,8 +617,8 @@ class RenameRegionOperator(PlayerAction):
 
     def is_applicable(self, state: State, role=None):
         return (
-            super().is_applicable(state, role)
-            and state.players[state.current_player].regions_owned > 0
+                super().is_applicable(state, role)
+                and state.players[state.current_player].regions_owned > 0
         )
 
     def update_state(self, state: State, args: dict[str, any] = None):
@@ -685,6 +697,34 @@ OPTIONS = [
         "min": 3,
         "max": 20,
         "description": "(how many turns before the game ends)",
+    },
+    {
+        "name": GameOptions.StartingBadness,
+        "type": "int",
+        "default": STARTING_BADNESS,
+        "min": 0,
+        "description": "(how bad the climate starts off at)",
+    },
+    {
+        "name": GameOptions.DisastersPerBadness,
+        "type": "float",
+        "default": DISASTERS_PER_BADNESS,
+        "min": 0,
+        "description": "(how much each point of climate severity increases average disasters per turn)",
+    },
+    {
+        "name": GameOptions.BaseDisastersPerRound,
+        "type": "int",
+        "default": BASE_DISASTERS_PER_ROUND,
+        "min": 0,
+        "description": "(default number of disasters per round)",
+    },
+    {
+        "name": GameOptions.MaxDisastersPerRound,
+        "type": "int",
+        "default": MAX_DISASTERS_PER_ROUND,
+        "min": 0,
+        "description": "(the maximum number of disasters ever allowed to happen in one round)",
     },
 ]
 

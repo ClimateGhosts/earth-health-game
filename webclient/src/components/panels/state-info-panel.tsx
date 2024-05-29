@@ -1,4 +1,4 @@
-import { Card, Col, Row } from "react-bootstrap";
+import { Card, Col, OverlayTrigger, Row, Tooltip } from "react-bootstrap";
 import React, { useContext } from "react";
 import { displayMoney, displayTime, GameContext, gameData } from "../game";
 import cx from "classnames";
@@ -6,14 +6,28 @@ import { SocketContext } from "../socketio-common";
 import { playerColor } from "../../lib/colors";
 import { orderBy } from "lodash";
 import DisasterEntry from "../disaster-entry";
+import { State } from "../../types/state";
+import { QuestionCircle } from "react-bootstrap-icons";
 
-const ClimateBadness = ({ badness }: { badness: number }) => {
+const ClimateBadness = ({ state }: { state: State }) => {
+  const disastersPerRound =
+    state.base_disasters + state.global_badness * state.disasters_per_badness;
+
   let message = "Moderate";
-  if (badness >= 10) message = "Bad";
-  if (badness >= 15) message = "Terrible";
-  if (badness >= 20) message = "Apocalyptic";
+  if (disastersPerRound >= 5) message = "Bad";
+  if (disastersPerRound >= 7) message = "Terrible";
+  if (disastersPerRound >= 9) message = "Apocalyptic";
 
-  return <>Climate Severity: {message}</>;
+  return (
+    <>
+      Climate Severity: {message}
+      <OverlayTrigger
+        overlay={<Tooltip>Disasters Per Round: ~{disastersPerRound.toFixed(1)}</Tooltip>}
+      >
+        <QuestionCircle className={"text-muted mb-1 ms-1"} />
+      </OverlayTrigger>
+    </>
+  );
 };
 
 export default ({ className }: { className?: string }) => {
@@ -31,7 +45,7 @@ export default ({ className }: { className?: string }) => {
           Time: {displayTime(state.time)} (playing until {displayTime(state.final_turn)})
         </Col>
         <Col>
-          <ClimateBadness badness={state.global_badness} />
+          <ClimateBadness state={state} />
         </Col>
       </Row>
       {state.players.some(
